@@ -18,26 +18,23 @@ struct DebugRect {
 	SDL_Color color;
 };
 
-
-
-
 class DebugSystem {
-public:
+  public:
 	DebugRenderOptions render;
 	DebugPlayerOptions player;
 	std::vector<DebugRect> debugRects;
 	std::vector<std::string> debugMessages;
 
-	static DebugSystem& Instance()  {
+	static DebugSystem &Instance()
+	{
 		static DebugSystem instance;
 		return instance;
 	}
 
-	static void Debug(const std::string& message)  {
-		Instance().debugMessages.push_back(message);
-	}
+	static void Debug(const std::string &message) { Instance().debugMessages.push_back(message); }
 
-	static void Clear()  {
+	static void Clear()
+	{
 		Instance().debugRects.clear();
 		Instance().debugMessages.clear();
 	}

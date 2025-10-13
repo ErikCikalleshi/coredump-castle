@@ -1,20 +1,17 @@
 #include "Player.hpp"
 #include "DebugSystem.hpp"
 
-Player::Player(const InputManager& inputManager, TextureManager& textureManager, Renderer& renderer)
-	: IEntity(textureManager, renderer),
-	inputManager(inputManager),
-	renderer(renderer)
+Player::Player(const InputManager &inputManager, TextureManager &textureManager, Renderer &renderer)
+    : IEntity(textureManager, renderer), inputManager(inputManager), renderer(renderer)
 {
 	animations.resize(11);
 	spriteSize = 56;
 	texture = textureManager.GetTexture("assets/Player/char_blue_1.png");
-	collisionBox = { 19, 25, 21, 32 };
+	collisionBox = {19, 25, 21, 32};
 	animations.at(ANIM_IDLE) = Animation(6, 0.6f);
 	animations.at(ANIM_WALK) = Animation(8, 0.8f);
 	animations.at(ANIM_JUMP) = Animation(8, 0.4f, false);
 	animations.at(ANIM_FALL) = Animation(8, 0.4f, false);
-
 
 	currentAnimation = ANIM_IDLE;
 	dynamic = true;
@@ -22,9 +19,7 @@ Player::Player(const InputManager& inputManager, TextureManager& textureManager,
 	accelerationRate = 2000;
 	jumpForce = -300;
 	maxSpeedX = 300;
-
 }
-
 
 void Player::Update(const float deltaTime, const float stepSize)
 {
@@ -53,13 +48,11 @@ void Player::Update(const float deltaTime, const float stepSize)
 		if (grounded) {
 			if (direction) {
 				state = WALKING;
-			}
-			else {
+			} else {
 				state = IDLE;
 			}
 
-		}
-		else if (velocity.y > 0) {
+		} else if (velocity.y > 0) {
 			state = FALLING;
 		}
 		break;
@@ -67,8 +60,7 @@ void Player::Update(const float deltaTime, const float stepSize)
 		if (grounded) {
 			if (direction) {
 				state = WALKING;
-			}
-			else {
+			} else {
 				state = IDLE;
 			}
 		}
@@ -86,8 +78,12 @@ void Player::Update(const float deltaTime, const float stepSize)
 void Player::UpdateAnimation()
 {
 	switch (state) {
-	case IDLE: currentAnimation = ANIM_IDLE; break;
-	case WALKING: currentAnimation = ANIM_WALK; break;
+	case IDLE:
+		currentAnimation = ANIM_IDLE;
+		break;
+	case WALKING:
+		currentAnimation = ANIM_WALK;
+		break;
 	case JUMPING:
 		if (currentAnimation != ANIM_JUMP) {
 			animations.at(ANIM_JUMP).start();
@@ -128,20 +124,17 @@ void Player::UpdateMovement(const float stepSize)
 	MoveHorizontal(direction, stepSize);
 }
 
-void Player::MoveHorizontal(const float currentDirection, const float stepSize) {
+void Player::MoveHorizontal(const float currentDirection, const float stepSize)
+{
 	if (currentDirection) {
 
-		if ((velocity.x > 0 && currentDirection < 0) ||
-			(velocity.x < 0 && currentDirection > 0))
-		{
+		if ((velocity.x > 0 && currentDirection < 0) || (velocity.x < 0 && currentDirection > 0)) {
 			// Directional change, apply stronger acceleration
 			acceleration.x = currentDirection * accelerationRate * 7.5f;
-		}
-		else {
+		} else {
 			acceleration.x = currentDirection * accelerationRate;
 		}
-	}
-	else {
+	} else {
 		// decelerate
 		if (velocity.x) {
 			const float factor = velocity.x > 0 ? -2.5f : 2.5f;
@@ -149,8 +142,7 @@ void Player::MoveHorizontal(const float currentDirection, const float stepSize) 
 			if (std::abs(velocity.x) < std::abs(amount)) {
 				acceleration.x = 0;
 				velocity.x = 0;
-			}
-			else {
+			} else {
 				acceleration.x += amount;
 				velocity.x += amount;
 			}
@@ -162,7 +154,6 @@ void Player::SetGrounded(bool grounded)
 {
 	this->grounded = grounded;
 }
-
 
 void Player::Render()
 {

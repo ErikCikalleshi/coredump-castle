@@ -1,22 +1,18 @@
 #include "Level.hpp"
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 
-
-Level::Level(TextureManager& textureManager, Renderer& renderer)
-	: GameObject(renderer), textureManager(textureManager)
+Level::Level(TextureManager &textureManager, Renderer &renderer) : GameObject(renderer), textureManager(textureManager)
 {
 	dimensions = glm::ivec2(0, 0);
-	//Load("assets/Maps/withtemplates.json");
 }
 
-void Level::Load(const std::string& levelFile, Player& player)
+void Level::Load(const std::string &levelFile, Player &player)
 {
 	this->player = &player;
 	tson::Tileson t;
 	map = t.parse(fs::path(levelFile));
-	if (map->getStatus() != tson::ParseStatus::OK)
-	{
+	if (map->getStatus() != tson::ParseStatus::OK) {
 		throw std::runtime_error("Failed to load map: " + map->getStatusMessage());
 	}
 	dimensions = glm::vec2(map->getSize().x, map->getSize().y);
@@ -24,30 +20,27 @@ void Level::Load(const std::string& levelFile, Player& player)
 	imagePath = "assets/tilesets" / imagePath.filename();
 	tileSetTexture = textureManager.GetTexture(imagePath.string());
 
-	//Load Background Textures
+	// Load Background Textures
 
-	tson::Layer* backgroundLayer = map->getLayer("Background");
-	if (backgroundLayer && backgroundLayer->getType() == tson::LayerType::Group)
-	{
+	tson::Layer *backgroundLayer = map->getLayer("Background");
+	if (backgroundLayer && backgroundLayer->getType() == tson::LayerType::Group) {
 		for (tson::Layer layer : backgroundLayer->getLayers()) {
-			if (layer.getType() != tson::LayerType::ImageLayer) return;
+			if (layer.getType() != tson::LayerType::ImageLayer)
+				return;
 
 			std::string layername = layer.getName();
 			fs::path backgroundPath = layer.getImage();
 			backgroundPath = "assets/background" / backgroundPath.filename();
 			if (layername == "Background") {
 				texture = textureManager.GetTexture(backgroundPath.string());
-			}
-			else if (layername == "Parallax") {
-				//TODO: Support multiple parallax layers with different scroll factors
+			} else if (layername == "Parallax") {
+				// TODO: Support multiple parallax layers with different scroll factors
 				parallaxTexture = textureManager.GetTexture(backgroundPath.string());
-			}
-			else if (layername == "Foreground") {
+			} else if (layername == "Foreground") {
 				foregroundTexture = textureManager.GetTexture(backgroundPath.string());
 			}
 		}
 	}
-
 
 	// Set player position to spawn point
 	auto spawnPoint = map->getLayer("Entities")->getObjectsByName("Player");
@@ -60,39 +53,39 @@ void Level::Load(const std::string& levelFile, Player& player)
 	player.position.y = pos.y;
 }
 
-void Level::Update(const float deltaTime, const float stepSize) {
-	//TODO: Move scroll factor to level file
+void Level::Update(const float deltaTime, const float stepSize)
+{
+	// TODO: Move scroll factor to level file
 	scrollPos += player->velocity.x * 0.12f * stepSize;
 	if (scrollPos <= -texture->w) {
 		scrollPos = 0;
 	}
 }
 
-void Level::Render() {
+void Level::Render()
+{
 
 	RenderBackground();
-	for (const tson::Layer& layer : map->getLayers())
-	{
+	for (const tson::Layer &layer : map->getLayers()) {
 		if (layer.getName() == "Tiles") {
 			RenderTiles(*tileSetTexture, layer);
 		}
 	}
-
 }
 
-void Level::RenderTiles(SDL_Texture& texture, const tson::Layer& layer) const
+void Level::RenderTiles(SDL_Texture &texture, const tson::Layer &layer) const
 {
-	if (layer.getType() == tson::LayerType::TileLayer)
-	{
-		std::map<std::tuple<int, int>, tson::Tile*> tileData = layer.getTileData();
-		for (const auto& [pos, tile] : tileData) {
+	if (layer.getType() == tson::LayerType::TileLayer) {
+		std::map<std::tuple<int, int>, tson::Tile *> tileData = layer.getTileData();
+		for (const auto &[pos, tile] : tileData) {
 			if (tile != nullptr) {
 				const glm::ivec2 position = glm::ivec2(std::get<0>(pos), std::get<1>(pos));
 				const glm::ivec2 tileSize = glm::ivec2(tile->getTileSize().x, tile->getTileSize().y);
 
 				const tson::Rect rectSrc = tile->getDrawingRect();
 
-				renderer.DrawTexture(texture, rectSrc.x / rectSrc.width, rectSrc.y / rectSrc.height, position.x, position.y, spriteSize);
+				renderer.DrawTexture(texture, rectSrc.x / rectSrc.width, rectSrc.y / rectSrc.height, position.x,
+				                     position.y, spriteSize);
 			}
 		}
 	}
@@ -106,8 +99,7 @@ void Level::RenderBackground()
 
 void Level::RenderForeground() const
 {
-	for (const tson::Layer& layer : map->getLayers())
-	{
+	for (const tson::Layer &layer : map->getLayers()) {
 		if (layer.getName() == "Foreground") {
 			RenderTiles(*tileSetTexture, layer);
 		}
