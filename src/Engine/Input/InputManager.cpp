@@ -1,5 +1,5 @@
 #include "InputManager.hpp"
-#include "DebugSystem.hpp"
+#include "Engine/DebugSystem.hpp"
 
 InputManager::InputManager()
 {

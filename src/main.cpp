@@ -5,7 +5,7 @@ float accumulator = 0.0f;
 
 int main()
 {
-	GameEngine game("Coredump Castle", 1920, 1080);
+	GameEngine::GameEngine game("Coredump Castle", 1920, 1080);
 	if (!game.Init())
 		return EXIT_FAILURE;
 

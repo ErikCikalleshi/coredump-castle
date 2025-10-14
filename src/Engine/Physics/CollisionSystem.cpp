@@ -1,5 +1,5 @@
 #include "CollisionSystem.hpp"
-#include "DebugSystem.hpp"
+#include "Engine/DebugSystem.hpp"
 #include "SDL3/SDL.h"
 
 void CollisionSystem::Resolve(std::vector<std::unique_ptr<GameObject>> &objects, float deltaTime) const

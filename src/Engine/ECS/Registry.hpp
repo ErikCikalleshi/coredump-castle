@@ -1,0 +1,46 @@
+#pragma once
+#include "ComponentStorage.hpp"
+#include "IStorage.hpp"
+#include "StorageWrapper.hpp"
+#include <memory>
+#include <typeindex>
+#include <unordered_map>
+
+namespace GameEngine::ECS {
+template <typename... Components>
+class View;
+
+class Registry {
+	std::unordered_map<std::type_index, std::unique_ptr<IStorage>> storagePools;
+
+  public:
+	template <typename T>
+	ComponentStorage<T> &get_storage()
+	{
+		const auto id = std::type_index(typeid(T));
+		if (!storagePools.count(id)) {
+			storagePools[id] = std::make_unique<StorageWrapper<T>>();
+		}
+
+		return static_cast<StorageWrapper<T> *>(storagePools[id].get())->storage;
+	}
+
+	Entity create()
+	{
+		static Entity next = 0;
+		return next++;
+	}
+
+	template <typename T>
+	void register_component(Entity entity, T component)
+	{
+		get_storage<T>().add_component(entity, std::move(component));
+	}
+
+	template <typename... Components>
+	View<Components...> view()
+	{
+		return View<Components...>(*this);
+	}
+};
+} // namespace GameEngine::ECS

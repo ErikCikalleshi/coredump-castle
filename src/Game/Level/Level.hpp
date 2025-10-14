@@ -11,7 +11,7 @@ class Level : public GameObject {
   public:
 	Level(TextureManager &textureManager, Renderer &renderer);
 
-	void Load(const std::string &levelFile, Player &player);
+	void Load(const std::string &levelFile, glm::vec2 &spawnPoint);
 	void Update(const float deltaTime, const float stepSize);
 	void Render();
 	void RenderForeground() const;
@@ -29,6 +29,5 @@ class Level : public GameObject {
 	std::shared_ptr<SDL_Texture> parallaxTexture = nullptr;
 	std::shared_ptr<SDL_Texture> foregroundTexture = nullptr;
 	TextureManager &textureManager;
-	Player *player = nullptr;
 	float scrollPos = 0.0f;
 };

@@ -1,6 +1,6 @@
 #pragma once
 #include "../AnimatedGameObject.hpp"
-#include "../Engine/Graphics/Animation.hpp"
+#include "Engine/Graphics/Animation.hpp"
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 #include <memory>

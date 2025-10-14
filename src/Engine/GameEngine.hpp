@@ -8,7 +8,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "ECS/Registry.hpp"
 
+namespace GameEngine {
 class GameState;
 
 class GameEngine {
@@ -35,6 +37,7 @@ class GameEngine {
 	void Quit() { running = false; }
 
 	Renderer &GetRenderer() { return renderer; }
+	ECS::Registry registry;
 
   private:
 	std::vector<std::unique_ptr<GameState>> states;
@@ -48,3 +51,4 @@ class GameEngine {
 	PhysicsManager physicsManager;
 	CollisionSystem collisionSystem;
 };
+} // namespace GameEngine

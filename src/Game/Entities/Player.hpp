@@ -1,6 +1,6 @@
 #pragma once
-#include "../Engine/Graphics/Animation.hpp"
-#include "../Engine/Input/InputManager.hpp"
+#include "Engine/Graphics/Animation.hpp"
+#include "Engine/Input/InputManager.hpp"
 #include "IEntity.hpp"
 
 enum PlayerState { IDLE, WALKING, JUMPING, FALLING };

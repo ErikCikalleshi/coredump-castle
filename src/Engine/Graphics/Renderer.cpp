@@ -1,6 +1,6 @@
 #include "Renderer.hpp"
-#include "../DebugSystem.hpp"
-#include "../Game/AnimatedGameObject.hpp"
+#include "Engine/DebugSystem.hpp"
+#include "Game/AnimatedGameObject.hpp"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <stdexcept>

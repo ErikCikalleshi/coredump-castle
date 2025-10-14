@@ -1,6 +1,10 @@
 #pragma once
-#include "../GameObject.hpp"
-#include "GameState.hpp"
+#include "Engine/ECS/Systems/InputSystem.hpp"
+#include "Engine/ECS/Systems/RenderSystem.hpp"
+#include "Game/GameObject.hpp"
+#include "Engine/GameState.hpp"
+
+namespace GameEngine {
 
 class PlayState : public GameState {
 	// Inherited via GameState
@@ -11,7 +15,7 @@ class PlayState : public GameState {
 	      collisionSystem(collisionSystem)
 	{
 	}
-	void Init() override;
+	void Init(GameEngine &game) override;
 	void Cleanup() override;
 	void Pause() override;
 	void Resume() override;
@@ -21,11 +25,13 @@ class PlayState : public GameState {
 
   private:
 	std::vector<std::unique_ptr<GameObject>> gameObjects;
-	Player *player = nullptr;
 	Level *level = nullptr;
 	const InputManager &inputManager;
 	TextureManager &textureManager;
 	Renderer &renderer;
 	PhysicsManager &physicsManager;
+	ECS::Systems::RenderSystem renderSystem{renderer};
+	ECS::Systems::InputSystem inputSystem{inputManager};
 	const CollisionSystem &collisionSystem;
 };
+} // namespace GameEngine

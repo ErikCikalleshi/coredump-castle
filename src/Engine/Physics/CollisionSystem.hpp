@@ -3,8 +3,8 @@
 #include <memory>
 #include <vector>
 
-#include "../Game/Entities/IEntity.hpp"
-#include "../Game/Level/Level.hpp"
+#include "Game/Entities/IEntity.hpp"
+#include "Game/Level/Level.hpp"
 
 class CollisionSystem {
   public:

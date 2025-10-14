@@ -1,5 +1,5 @@
 #include "Player.hpp"
-#include "DebugSystem.hpp"
+#include "Engine/DebugSystem.hpp"
 
 Player::Player(const InputManager &inputManager, TextureManager &textureManager, Renderer &renderer)
     : IEntity(textureManager, renderer), inputManager(inputManager), renderer(renderer)

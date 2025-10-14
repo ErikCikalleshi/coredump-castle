@@ -36,10 +36,12 @@ class Renderer {
 	void DrawBackground(SDL_Texture &texture) const;
 	void DrawParalaxBackground(SDL_Texture &texture, const float &scrollPos, const float y, const float scale) const;
 	void CenterCameraOn(const GameObject &gameObject);
+	SDL_Renderer& getSDLRenderer() const { return *renderer; }
 
 	void Resize(int w, int h);
 
 	std::unique_ptr<SDL_Texture, SDLTextureDeleter> LoadTexture(const std::string &filePath);
+	void RenderTexture(SDL_Texture &texture, const SDL_FRect &srcRect, SDL_FRect &dstRect, const bool flip) const;
 
   private:
 	int width;
@@ -49,7 +51,6 @@ class Renderer {
 
 	SDL_FRect viewport{.x = 0, .y = 0, .w = static_cast<float>(logW), .h = static_cast<float>(logH)};
 	std::vector<std::string> debugMessages;
-	void RenderTexture(SDL_Texture &texture, const SDL_FRect &srcRect, SDL_FRect &dstRect, const bool flip) const;
 
 	struct SDLRendererDeleter {
 		void operator()(SDL_Renderer *r) const noexcept

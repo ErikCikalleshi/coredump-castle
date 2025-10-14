@@ -7,9 +7,8 @@ Level::Level(TextureManager &textureManager, Renderer &renderer) : GameObject(re
 	dimensions = glm::ivec2(0, 0);
 }
 
-void Level::Load(const std::string &levelFile, Player &player)
+void Level::Load(const std::string &levelFile, glm::vec2 &spawnPoint)
 {
-	this->player = &player;
 	tson::Tileson t;
 	map = t.parse(fs::path(levelFile));
 	if (map->getStatus() != tson::ParseStatus::OK) {
@@ -43,23 +42,21 @@ void Level::Load(const std::string &levelFile, Player &player)
 	}
 
 	// Set player position to spawn point
-	auto spawnPoint = map->getLayer("Entities")->getObjectsByName("Player");
-	if (spawnPoint.size() != 1 && !spawnPoint.at(0).isPoint()) {
+	const auto spawnPointFromMap = map->getLayer("Entities")->getObjectsByName("Player");
+	if (spawnPointFromMap.size() != 1 && !spawnPointFromMap.at(0).isPoint()) {
 		throw std::runtime_error("Map must have exactly one Player spawn point");
 	}
-	const tson::Vector2 pos = spawnPoint.at(0).getPosition();
-
-	player.position.x = pos.x;
-	player.position.y = pos.y;
+	const tson::Vector2 pos = spawnPointFromMap.at(0).getPosition();
+	spawnPoint = glm::vec2(pos.x, pos.y);	
 }
 
 void Level::Update(const float deltaTime, const float stepSize)
 {
 	// TODO: Move scroll factor to level file
-	scrollPos += player->velocity.x * 0.12f * stepSize;
-	if (scrollPos <= -texture->w) {
-		scrollPos = 0;
-	}
+	//scrollPos += player->velocity.x * 0.12f * stepSize;
+	//if (scrollPos <= -texture->w) {
+	//	scrollPos = 0;
+	//}
 }
 
 void Level::Render()

@@ -3,6 +3,8 @@
 #include "DebugSystem.hpp"
 #include "GameState.hpp"
 
+namespace GameEngine {
+
 GameEngine::GameEngine(const std::string &title, int w, int h) : renderer(title, w, h), textureManager(renderer)
 {
 	width = w;
@@ -21,7 +23,7 @@ bool GameEngine::Init()
 	    std::make_unique<PlayState>(inputManager, textureManager, renderer, physicsManager, collisionSystem));
 	running = true;
 
-	states.back()->Init();
+	states.back()->Init(*this);
 
 	return true;
 }
@@ -38,7 +40,7 @@ void GameEngine::ChangeState(std::unique_ptr<GameState> state)
 
 	// store and init the new state
 	states.push_back(std::move(state));
-	states.back()->Init();
+	states.back()->Init(*this);
 }
 
 void GameEngine::PushState(std::unique_ptr<GameState> state)
@@ -50,7 +52,7 @@ void GameEngine::PushState(std::unique_ptr<GameState> state)
 
 	// store and init the new state
 	states.push_back(std::move(state));
-	states.back()->Init();
+	states.back()->Init(*this);
 }
 
 void GameEngine::PopState()
@@ -107,3 +109,4 @@ void GameEngine::Render()
 	if (!states.empty())
 		states.back()->Render(*this);
 };
+} // namespace GameEngine
