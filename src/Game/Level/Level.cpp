@@ -90,8 +90,8 @@ void Level::RenderTiles(SDL_Texture &texture, const tson::Layer &layer) const
 
 void Level::RenderBackground()
 {
-	renderer.DrawBackground(*texture);
-	renderer.DrawParalaxBackground(*parallaxTexture, scrollPos, 260, 1);
+	//renderer.DrawBackground(*texture);
+	//renderer.DrawParalaxBackground(*parallaxTexture, scrollPos, 260, 1);
 }
 
 void Level::RenderForeground() const

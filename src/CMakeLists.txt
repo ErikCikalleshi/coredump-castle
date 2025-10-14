@@ -11,4 +11,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}  # Project root
 )
 
+
+
+
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 SDL3_image::SDL3_image glm::glm)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE vendor)

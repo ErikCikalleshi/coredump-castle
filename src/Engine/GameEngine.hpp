@@ -2,8 +2,6 @@
 #include "Graphics/Renderer.hpp"
 #include "Graphics/TextureManager.hpp"
 #include "Input/InputManager.hpp"
-#include "Physics/CollisionSystem.hpp"
-#include "Physics/PhysicsManager.hpp"
 #include <SDL3/SDL.h>
 #include <memory>
 #include <string>
@@ -48,7 +46,5 @@ class GameEngine {
 	const std::string title;
 	InputManager inputManager;
 	TextureManager textureManager;
-	PhysicsManager physicsManager;
-	CollisionSystem collisionSystem;
 };
 } // namespace GameEngine

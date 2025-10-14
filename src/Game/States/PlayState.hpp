@@ -9,12 +9,8 @@ namespace GameEngine {
 class PlayState : public GameState {
 	// Inherited via GameState
   public:
-	PlayState(const InputManager &input, TextureManager &textureManager, Renderer &renderer,
-	          PhysicsManager &physicsManager, const CollisionSystem &collisionSystem)
-	    : inputManager(input), textureManager(textureManager), renderer(renderer), physicsManager(physicsManager),
-	      collisionSystem(collisionSystem)
-	{
-	}
+	PlayState(const InputManager &input, TextureManager &textureManager, Renderer &renderer)
+	    : inputManager(input), textureManager(textureManager), renderer(renderer){}
 	void Init(GameEngine &game) override;
 	void Cleanup() override;
 	void Pause() override;
@@ -24,14 +20,10 @@ class PlayState : public GameState {
 	void Render(GameEngine &game) override;
 
   private:
-	std::vector<std::unique_ptr<GameObject>> gameObjects;
-	Level *level = nullptr;
 	const InputManager &inputManager;
 	TextureManager &textureManager;
 	Renderer &renderer;
-	PhysicsManager &physicsManager;
 	ECS::Systems::RenderSystem renderSystem{renderer};
 	ECS::Systems::InputSystem inputSystem{inputManager};
-	const CollisionSystem &collisionSystem;
 };
 } // namespace GameEngine

@@ -19,11 +19,7 @@ class MovementSystem {
 			auto &move = view.get<MovementComponent>(entity);
 			auto &input = view.get<InputComponent>(entity);
 
-			// Jump
-			if (move.grounded && input.jumpPressed) {
-				vel.velocity.y = move.jumpForce;
-				move.grounded = false;
-			}
+
 
 			if (input.horizontalDirection) {
 

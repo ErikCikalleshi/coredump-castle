@@ -71,6 +71,7 @@ void Renderer::EndFrame() const
 	SDL_RenderPresent(renderer.get());
 }
 
+// Remove
 void Renderer::DrawAnimatedGameObject(const AnimatedGameObject &obj) const
 {
 	const float srcX =
@@ -95,6 +96,7 @@ void Renderer::DrawAnimatedGameObject(const AnimatedGameObject &obj) const
 	}
 }
 
+// Remove
 void Renderer::DrawGameObject(const GameObject &obj, const float srcX, const float srcY, const float dstX,
                               const float dstY) const
 {
@@ -110,6 +112,7 @@ void Renderer::CenterCameraOn(const GameObject &gameObject)
 	viewport.x = (gameObject.position.x + gameObject.spriteSize / 2) - viewport.w / 2;
 }
 
+// Remove
 void Renderer::DrawTexture(SDL_Texture &texture, const float srcX, const float srcY, const float dstX, const float dstY,
                            const float spriteSize) const
 {
@@ -119,11 +122,13 @@ void Renderer::DrawTexture(SDL_Texture &texture, const float srcX, const float s
 	RenderTexture(texture, src, dst, false);
 }
 
+// Remove
 void Renderer::DrawBackground(SDL_Texture &texture) const
 {
 	SDL_RenderTexture(renderer.get(), &texture, nullptr, nullptr);
 }
 
+// Remove
 void Renderer::DrawParalaxBackground(SDL_Texture &texture, const float &scrollPos, const float y,
                                      const float scale = 1) const
 {
@@ -132,10 +137,22 @@ void Renderer::DrawParalaxBackground(SDL_Texture &texture, const float &scrollPo
 	SDL_RenderTextureTiled(renderer.get(), &texture, nullptr, scale, &dst);
 }
 
-void Renderer::RenderTexture(SDL_Texture &texture, const SDL_FRect &srcRect, SDL_FRect &dstRect, const bool flip) const
+void Renderer::RenderTextureTiled(SDL_Texture &texture, SDL_FRect &dstRect, const float scale) const
 {
-	dstRect.x -= viewport.x;
+	SDL_RenderTextureTiled(renderer.get(), &texture, nullptr, scale, &dstRect);
+}
+
+void Renderer::RenderTexture(SDL_Texture &texture, const std::optional<SDL_FRect> srcRect,
+                             std::optional<SDL_FRect> dstRect, const bool flip) const
+{
+	const SDL_FRect *srcPtr = srcRect ? &srcRect.value() : nullptr;
+	SDL_FRect *dstPtr = nullptr;
+
+	if (dstRect) {
+		dstRect.value().x -= viewport.x;
+		dstPtr = &dstRect.value();
+	}
 	const SDL_FlipMode flipMode = flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
 
-	SDL_RenderTextureRotated(renderer.get(), &texture, &srcRect, &dstRect, 0, nullptr, flipMode);
+	SDL_RenderTextureRotated(renderer.get(), &texture, srcPtr, dstPtr, 0, nullptr, flipMode);
 }

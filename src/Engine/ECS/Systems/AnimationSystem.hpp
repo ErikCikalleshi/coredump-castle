@@ -1,18 +1,30 @@
 #pragma once
 
-#include "../Components/Render/AnimationComponent.hpp"
-#include "../Registry.hpp"
+#include "Engine/ECS/Components/Render/AnimationComponent.hpp"
+#include "Engine/ECS/Components/Core/StateComponent.hpp"
+#include "Engine/ECS/Registry.hpp"
 
 namespace GameEngine::ECS::Systems {
 class AnimationSystem {
   public:
 	static void Update(Registry &registry, float stepSize)
 	{
-		auto view = registry.view<AnimationComponent>();
+		auto view = registry.view<AnimationComponent, TileComponent>();
 		for (auto entity : view) {
 			auto &anim = view.get<AnimationComponent>(entity);
+			auto &tile = view.get<TileComponent>(entity);
+
+			if (registry.has<StateComponent>(entity)) {
+				anim.currentAnimation = anim.stateToAnimationIndex.at(registry.get<StateComponent>(entity).state);
+			}
+
+			tile.TileMapPosition = {0, 0}; // Default to first frame if no animation is active
 			if (anim.currentAnimation != -1) {
 				anim.animations.at(anim.currentAnimation).step(stepSize);
+
+				// Update tile map position based on current animation frame
+				tile.TileMapPosition.x = anim.animations.at(anim.currentAnimation).currentFrame() * tile.TileSize;
+				tile.TileMapPosition.y = anim.currentAnimation * tile.TileSize;
 			}
 		}
 	}

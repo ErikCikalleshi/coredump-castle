@@ -37,6 +37,20 @@ class Registry {
 		get_storage<T>().add_component(entity, std::move(component));
 	}
 
+	template <typename T>
+	bool has(Entity entity)
+	{
+		if (!storagePools.count(std::type_index(typeid(T))))
+			return false;
+		return get_storage<T>().contains_component(entity);
+	}
+
+	template <typename T>
+	T &get(Entity entity)
+	{
+		return get_storage<T>().get_component(entity);
+	}
+
 	template <typename... Components>
 	View<Components...> view()
 	{

@@ -19,8 +19,6 @@ namespace GameEngine::ECS::Systems {
                 auto& vel = viewGravity.get<VelocityComponent>(entity);
                 auto& grav = viewGravity.get<GravityComponent>(entity);
                 vel.velocity += glm::vec2(0, grav.gravity) * timeStep;
-                SDL_Log("Velocity: %f", vel.velocity.x);
-
             }
 
 

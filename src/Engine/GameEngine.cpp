@@ -20,7 +20,7 @@ bool GameEngine::Init()
 {
 	// game data
 	states.emplace_back(
-	    std::make_unique<PlayState>(inputManager, textureManager, renderer, physicsManager, collisionSystem));
+	    std::make_unique<PlayState>(inputManager, textureManager, renderer));
 	running = true;
 
 	states.back()->Init(*this);

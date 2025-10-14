@@ -1,4 +1,5 @@
 #include "Engine/GameEngine.hpp"
+#include "Engine/DebugSystem.hpp"
 
 constexpr float stepSize = 1.0f / 240.0f;
 float accumulator = 0.0f;
@@ -13,6 +14,8 @@ int main()
 	while (game.Running()) {
 		const Uint64 currentTime = SDL_GetTicks();
 		const float deltaTime = (currentTime - prevTime) / 1000.0f;
+
+		//DebugSystem::Debug(std::to_string(1000 / deltaTime));
 
 		game.HandleEvents();
 
