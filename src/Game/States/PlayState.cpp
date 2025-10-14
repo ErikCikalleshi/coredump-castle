@@ -15,7 +15,7 @@ void PlayState::Init(GameEngine &game)
 	glm::vec2 spawnPoint;
 
 	std::unique_ptr<Level> level = std::make_unique<Level>(textureManager, renderer);
-	level->Load("assets/Maps/Level1.json", spawnPoint);
+	level->Load("assets/maps/Level1.json", spawnPoint);
 	this->level = level.get();
 
 	PlayerFactory::CreatePlayer(game.registry, textureManager, spawnPoint.x, spawnPoint.y);

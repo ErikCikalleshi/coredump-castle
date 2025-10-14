@@ -1,6 +1,5 @@
 #pragma once
 
-class GravityComponent {
-  public:
-	float gravity{980.0f}; // Pixels per second squared
+struct GravityComponent {
+    float gravity{1000.0f}; // Pixels per second squared
 };
