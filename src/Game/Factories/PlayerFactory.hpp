@@ -37,14 +37,16 @@ struct PlayerFactory {
 		registry.register_component(e, TileComponent{.TileSize = 56, .TileMapPosition = {0, 0}});
 
 		AnimationComponent playerAnim{
-		    std::vector<Animation>{
+		    .animations= std::vector<Animation>{
 		        Animation(6, 0.6f),        // Idle
+		        Animation(6, 0.6f),        // Attack
 		        Animation(8, 0.8f),        // Walking
 		        Animation(8, 0.4f, false), // Jumping
 		        Animation(8, 0.4f, false)  // Falling
 		    },
 		};
 		playerAnim.stateToAnimationIndex = {{States::Idle, 0},
+		                                    {States::Attacking, 1},
 		                                    {States::Walking, 2},
 		                                    {States::Jumping, 3},
 		                                    {States::Falling, 4}};

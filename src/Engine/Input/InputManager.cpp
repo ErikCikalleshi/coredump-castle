@@ -6,7 +6,7 @@ InputManager::InputManager()
 	scancodeMapping = {
 	    {SDL_SCANCODE_A, Key::Left},
 	    {SDL_SCANCODE_D, Key::Right},
-	    {SDL_SCANCODE_W, Key::Up},
+	    {SDL_SCANCODE_SPACE, Key::Up},
 	    {SDL_SCANCODE_S, Key::Down},
 	};
 

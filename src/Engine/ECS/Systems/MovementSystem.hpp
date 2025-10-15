@@ -44,6 +44,10 @@ class MovementSystem {
 					}
 				}
 			}
+
+			if(registry.has<RenderComponent>(entity) && vel.velocity.x) {
+				registry.get<RenderComponent>(entity).flipX = vel.velocity.x < 0;
+			}
 		}
 	}
 };
