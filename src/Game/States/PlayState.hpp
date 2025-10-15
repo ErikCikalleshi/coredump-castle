@@ -1,7 +1,6 @@
 #pragma once
 #include "Engine/ECS/Systems/InputSystem.hpp"
 #include "Engine/ECS/Systems/RenderSystem.hpp"
-#include "Game/GameObject.hpp"
 #include "Engine/GameState.hpp"
 
 namespace GameEngine {

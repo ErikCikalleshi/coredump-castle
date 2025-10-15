@@ -6,9 +6,7 @@
 #include "Engine/ECS/Systems/JumpSystem.hpp"
 #include "Engine/ECS/Systems/StateSystem.hpp"
 #include "Engine/GameEngine.hpp"
-#include "Game/Entities/Player.hpp"
 #include "Game/Factories/LevelFactory.hpp"
-#include "Game/Level/Level.hpp"
 
 namespace GameEngine {
 

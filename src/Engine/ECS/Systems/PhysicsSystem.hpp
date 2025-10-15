@@ -29,9 +29,6 @@ namespace GameEngine::ECS::Systems {
                 auto &acc = view.get<AccelerationComponent>(entity);
                 auto &move = view.get<MovementComponent>(entity);
 
-                // SDL_Log("Position: (%.2f, %.2f), Velocity: (%.2f, %.2f), Acceleration: (%.2f, %.2f)", pos.position.x,
-                //         pos.position.y, vel.velocity.x, vel.velocity.y, acc.acceleration.x, acc.acceleration.y);
-
                 vel.velocity += acc.acceleration * timeStep;
                 if (std::abs(vel.velocity.x) > move.maxSpeedX) {
                     vel.velocity.x = move.maxSpeedX * (vel.velocity.x > 0 ? 1 : -1);
