@@ -12,8 +12,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 
+target_link_libraries(${PROJECT_NAME}  PRIVATE $<IF:$<TARGET_EXISTS:SDL3_image::SDL3_image-shared>,SDL3_image::SDL3_image-shared,SDL3_image::SDL3_image-static>)
 
-
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 SDL3_image::SDL3_image glm::glm)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 glm::glm)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE vendor)
