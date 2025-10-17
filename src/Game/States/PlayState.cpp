@@ -1,67 +1,48 @@
 #include "PlayState.hpp"
-#include "GameEngine.hpp"
-#include "../Entities/Player.hpp"
-#include "../Game/Level/Level.hpp"
+#include "Engine/ECS/Systems/AnimationSystem.hpp"
+#include "Engine/ECS/Systems/CollisionSystem.hpp"
+#include "Engine/ECS/Systems/MovementSystem.hpp"
+#include "Engine/ECS/Systems/PhysicsSystem.hpp"
+#include "Engine/ECS/Systems/JumpSystem.hpp"
+#include "Engine/ECS/Systems/StateSystem.hpp"
+#include "Engine/GameEngine.hpp"
+#include "Game/Factories/LevelFactory.hpp"
 
+namespace GameEngine {
 
-void PlayState::Init()
+void PlayState::Init(GameEngine &game)
 {
-	std::unique_ptr<Player> player = std::make_unique<Player>(inputManager, textureManager, renderer);
-	this->player = player.get();
-	
-	std::unique_ptr<Level> level = std::make_unique<Level>(textureManager, renderer);
-	this->level = level.get();
-
-	level->Load("assets/maps/Level1.json", *player);
-
-
-	gameObjects.emplace_back(std::move(level));
-	gameObjects.emplace_back(std::move(player));
+	LevelFactory factory(game.registry, textureManager);
+	factory.CreateLevel("assets/maps/Level1.json");
 }
 
-void PlayState::Cleanup()
+void PlayState::Cleanup() {}
+
+void PlayState::Pause() {}
+
+void PlayState::Resume() {}
+
+void PlayState::HandleEvents(GameEngine &game) {}
+
+// TODO Cleanup
+void PlayState::Update(GameEngine &game, const float deltaTime, const float stepSize)
 {
 
+	inputSystem.Update(game.registry);
+
+	ECS::Systems::JumpSystem::Update(game.registry);
+	ECS::Systems::MovementSystem::Update(game.registry, stepSize);
+	ECS::Systems::PhysicsSystem::Update(game.registry, stepSize);
+	ECS::Systems::CollisionSystem::Update(game.registry);
+
+	ECS::Systems::StateSystem::Update(game.registry);
+	ECS::Systems::AnimationSystem::Update(game.registry, stepSize);
 }
 
-void PlayState::Pause()
-{
-}
-
-void PlayState::Resume()
-{
-}
-
-void PlayState::HandleEvents(GameEngine& game)
-{
-
-}
-
-void PlayState::Update(GameEngine& game, const float deltaTime, const float stepSize)
-{
-	// 1. Update all entities and apply physics
-	for (auto& entity : gameObjects)
-	{
-		entity->Update(deltaTime, stepSize);
-		physicsManager.ApplyPhysics(*entity, stepSize);
-	}
-	collisionSystem.Resolve(gameObjects, deltaTime);
-
-}
-
-void PlayState::Render(GameEngine& game)
+void PlayState::Render(GameEngine &game)
 {
 	game.GetRenderer().StartFrame(25, 25, 25, 255);
-	
-	game.GetRenderer().CenterCameraOn(*player);
-
-
-	for (auto& entity : gameObjects)
-	{
-		entity->Render();
-	}
-	level->RenderForeground();
-
-
+	renderSystem.Update(game.registry);
 	game.GetRenderer().EndFrame();
 }
+} // namespace GameEngine

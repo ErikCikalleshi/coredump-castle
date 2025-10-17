@@ -1,9 +1,11 @@
 #include "GameEngine.hpp"
 #include "../Game/States/PlayState.hpp"
-#include "GameState.hpp" 
 #include "DebugSystem.hpp"
+#include "GameState.hpp"
 
-GameEngine::GameEngine(const std::string& title, int w, int h) :renderer(title, w, h), textureManager(renderer)
+namespace GameEngine {
+
+GameEngine::GameEngine(const std::string &title, int w, int h) : renderer(title, w, h), textureManager(renderer)
 {
 	width = w;
 	height = h;
@@ -14,24 +16,19 @@ GameEngine::~GameEngine()
 	Cleanup();
 }
 
-
 bool GameEngine::Init()
 {
 	// game data
-	states.emplace_back(std::make_unique<PlayState>(inputManager, textureManager, renderer, physicsManager,collisionSystem));
+	states.emplace_back(
+	    std::make_unique<PlayState>(inputManager, textureManager, renderer));
 	running = true;
 
-	states.back()->Init();
+	states.back()->Init(*this);
 
 	return true;
 }
 
-
-void GameEngine::Cleanup() noexcept
-{
-}
-
-
+void GameEngine::Cleanup() noexcept {}
 
 void GameEngine::ChangeState(std::unique_ptr<GameState> state)
 {
@@ -43,7 +40,7 @@ void GameEngine::ChangeState(std::unique_ptr<GameState> state)
 
 	// store and init the new state
 	states.push_back(std::move(state));
-	states.back()->Init();
+	states.back()->Init(*this);
 }
 
 void GameEngine::PushState(std::unique_ptr<GameState> state)
@@ -55,7 +52,7 @@ void GameEngine::PushState(std::unique_ptr<GameState> state)
 
 	// store and init the new state
 	states.push_back(std::move(state));
-	states.back()->Init();
+	states.back()->Init(*this);
 }
 
 void GameEngine::PopState()
@@ -72,14 +69,11 @@ void GameEngine::PopState()
 	}
 }
 
-
 void GameEngine::HandleEvents()
 {
-	SDL_Event event{ 0 };
-	while (SDL_PollEvent(&event))
-	{
-		switch (event.type)
-		{
+	SDL_Event event{0};
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
 		case SDL_EVENT_QUIT:
 			running = false;
 			break;
@@ -97,26 +91,22 @@ void GameEngine::HandleEvents()
 		default:
 			break;
 		};
-
 	}
 
 	if (!states.empty())
 		states.back()->HandleEvents(*this);
 }
 
-void GameEngine::Update(const float& deltaTime, const float stepSize)
+void GameEngine::Update(const float &deltaTime, const float stepSize)
 {
 	DebugSystem::Clear();
 	if (!states.empty())
 		states.back()->Update(*this, deltaTime, stepSize);
 }
 
-
-
-void GameEngine::Render() {
+void GameEngine::Render()
+{
 	if (!states.empty())
 		states.back()->Render(*this);
 };
-
-
-
+} // namespace GameEngine

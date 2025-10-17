@@ -1,21 +1,21 @@
 #pragma once
 #include <SDL3/SDL.h>
+#include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
-#include <optional>
-#include <memory>
 
 class Renderer;
 
 class TextureManager {
-public:
-	TextureManager(Renderer& renderer) :renderer(renderer) {};
+  public:
+	TextureManager(Renderer &renderer) : renderer(renderer) {};
 
-	std::shared_ptr<SDL_Texture> GetTexture(const std::string& filePath);
+	std::shared_ptr<SDL_Texture> GetTexture(const std::string &filePath);
 
 	void Cleanup() { textures.clear(); }
 
-private:
+  private:
 	std::unordered_map<std::string, std::shared_ptr<SDL_Texture>> textures;
-	Renderer& renderer;
+	Renderer &renderer;
 };

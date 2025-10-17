@@ -2,87 +2,30 @@
 	"version": 3,
 	"configurePresets": [
 		{
-			"name": "windows-base",
+			"name": "base",
 			"hidden": true,
 			"generator": "Ninja",
 			"binaryDir": "${sourceDir}/out/build/${presetName}",
 			"installDir": "${sourceDir}/out/install/${presetName}",
 			"cacheVariables": {
-				"CMAKE_C_COMPILER": "cl.exe",
-				"CMAKE_CXX_COMPILER": "cl.exe",
-				"CMAKE_CXX_FLAGS_DEBUG": "/analyze /analyze:ruleset=CppCoreCheckRules.ruleset /analyze:external- /external:W0 /external:I \"${sourceDir}/vendor\" /external:I \"${sourceDir}/out\" /wd26455 /wd26440 /wd6800 /EHsc"
-			},
-			"condition": {
-				"type": "equals",
-				"lhs": "${hostSystemName}",
-				"rhs": "Windows"
+				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
 			}
 		},
 		{
-			"name": "x64-debug",
-			"displayName": "x64 Debug",
-			"inherits": "windows-base",
-			"architecture": {
-				"value": "x64",
-				"strategy": "external"
-			},
+			"name": "debug",
+			"displayName": "Debug",
+			"inherits": "base",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug"
 			}
 		},
 		{
-			"name": "x64-release",
-			"displayName": "x64 Release",
-			"inherits": "x64-debug",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
-			}
-		},
-		{
-			"name": "linux-base",
-			"hidden": true,
-			"generator": "Ninja",
-			"binaryDir": "${sourceDir}/out/build/${presetName}",
-			"installDir": "${sourceDir}/out/install/${presetName}",
-			"condition": {
-				"type": "equals",
-				"lhs": "${hostSystemName}",
-				"rhs": "Linux"
-			}
-		},
-		{
-			"name": "linux-debug",
-			"displayName": "Linux Debug",
-			"inherits": "linux-base",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
-			}
-		},
-		{
-			"name": "linux-release",
-			"displayName": "Linux Release",
-			"inherits": "linux-base",
+			"name": "release",
+			"displayName": "Release",
+			"inherits": "base",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release"
 			}
 		}
-	],
-	"buildPresets": [
-	{
-		"name": "linux-debug",
-		"configurePreset": "linux-debug"
-	},
-	{
-		"name": "linux-release",
-		"configurePreset": "linux-release"
-	},
-	{
-		"name": "x64-debug",
-		"configurePreset": "x64-debug"
-	},
-	{
-		"name": "x64-release",
-		"configurePreset": "x64-release"
-	}
-]
+	]
 }
