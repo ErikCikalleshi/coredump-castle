@@ -7,7 +7,7 @@ struct DebugRenderOptions {
 };
 
 struct DebugPlayerOptions {
-	bool showState = true;
+	bool showState = false;
 
 	bool godMode = false;
 	bool noClip = false;
@@ -16,6 +16,7 @@ struct DebugPlayerOptions {
 struct DebugRect {
 	SDL_FRect rect;
 	SDL_Color color;
+	
 };
 
 class DebugSystem {
