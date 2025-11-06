@@ -1,44 +1,45 @@
 ﻿#pragma once
 #include "Engine/Graphics/Animation.hpp"
-#include <unordered_map>
-#include <vector>
 #include <SDL3/SDL_render.h>
 #include <glm/vec2.hpp>
+#include <unordered_map>
+#include <vector>
 
 struct AnimationFrame {
-	SDL_Texture *texture;
-	glm::ivec2 TileSize;
-	glm::ivec2 TileMapPosition;
+	SDL_Texture *texture{};
+	glm::ivec2 tileSize{};
+	glm::ivec2 tileMapPosition{};
 };
 
 struct AnimationComponent {
-	std::vector<std::vector<AnimationFrame>> frames;
-	std::vector<Animation> animations;
+	std::vector<std::vector<AnimationFrame>> frames{};
+	std::vector<Animation> animations{};
 	int currentAnimation = 0;
 	int previousAnimation = 0;
-	std::unordered_map<int, int> stateToAnimationIndex;
+	std::unordered_map<int, int> stateToAnimationIndex{};
 
-	void addAnimationFromSpritesheet(int state, int frameCount, float length, SDL_Texture *texture, glm::ivec2 tileSize,
-	                                 glm::ivec2 tileMapPos)
+	void addAnimationFromSpritesheet(const State &state, int frameCount, float length, SDL_Texture *texture,
+	                                 glm::ivec2 tileSize, glm::ivec2 tileMapPos)
 	{
+		int stateIndex = static_cast<int>(state);
 		const Animation anim(frameCount, length);
-		if (state >= animations.size()) {
-			animations.resize(state + 1);
+		if (stateIndex >= animations.size()) {
+			animations.resize(stateIndex + 1);
 		}
-		animations[state] = anim;
+		animations[stateIndex] = anim;
 
-		std::vector<AnimationFrame> animationFrames;
+		std::vector<AnimationFrame> animationFrames{};
 
 		for (size_t i = 0; i < frameCount; i++) {
-			AnimationFrame frame;
+			AnimationFrame frame{};
 			frame.texture = texture;
-			frame.TileSize = tileSize;
-			frame.TileMapPosition = glm::ivec2(tileMapPos.x + i * tileSize.x, tileMapPos.y);
+			frame.tileSize = tileSize;
+			frame.tileMapPosition = glm::ivec2(tileMapPos.x + i * tileSize.x, tileMapPos.y);
 			animationFrames.push_back(frame);
 		}
-		if (state >= frames.size()) {
-			frames.resize(state + 1);
+		if (stateIndex >= frames.size()) {
+			frames.resize(stateIndex + 1);
 		}
-		frames[state] = animationFrames;
+		frames[stateIndex] = animationFrames;
 	}
 };

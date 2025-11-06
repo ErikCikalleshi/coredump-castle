@@ -20,50 +20,50 @@
 #include "Engine/Graphics/TextureManager.hpp"
 
 struct PlayerFactory {
-	static GameEngine::ECS::Entity CreatePlayer(GameEngine::ECS::Registry &registry, TextureManager &texMgr,
+	static GameEngine::ECS::Entity createPlayer(GameEngine::ECS::Registry &registry, TextureManager &texMgr,
 	                                            const glm::vec2 spawn, const fs::path &texturePath,
 	                                            const int layerIndex)
 	{
 		auto e = registry.create();
-		registry.register_component(e, PlayerTag{});
-		registry.register_component(e, PositionComponent{.position = spawn});
-		registry.register_component(e, VelocityComponent{.velocity = {0.0f, 0.0f}});
-		registry.register_component(e, AccelerationComponent{.acceleration = {0.0f, 0.0f}});
-		registry.register_component(e, GravityComponent{});
-		registry.register_component(e, GroundedComponent{});
-		registry.register_component(e, CollisionComponent{19, 25, 21, 32});
+		registry.registerComponent(e, PlayerTag{});
+		registry.registerComponent(e, PositionComponent{.position = spawn});
+		registry.registerComponent(e, VelocityComponent{.velocity = {0.0f, 0.0f}});
+		registry.registerComponent(e, AccelerationComponent{.acceleration = {0.0f, 0.0f}});
+		registry.registerComponent(e, GravityComponent{});
+		registry.registerComponent(e, GroundedComponent{});
+		registry.registerComponent(e, CollisionComponent{19, 25, 21, 32});
 
-		registry.register_component(e, RenderComponent{.layer = layerIndex, .flipX = false});
-		registry.register_component(e, SpriteComponent{.texture = &texMgr.GetTexture(texturePath.string()),
-		                                               .TileSize = {56, 56},
-		                                               .TileMapPosition = {0, 0}});
-		registry.register_component(e, CenterCameraComponent{});
+		registry.registerComponent(e, RenderComponent{.layer = layerIndex, .flipX = false});
+		registry.registerComponent(e, SpriteComponent{.texture = &texMgr.getTexture(texturePath.string()),
+		                                              .tileSize = {56, 56},
+		                                              .tileMapPosition = {0, 0}});
+		registry.registerComponent(e, CenterCameraComponent{});
 
 		AnimationComponent playerAnim{};
 
-		playerAnim.addAnimationFromSpritesheet(States::Idle, 6, 0.6f, &texMgr.GetTexture(texturePath.string()),
-		                                       {56, 56}, {0, 0});
+		playerAnim.addAnimationFromSpritesheet(State::Idle, 6, 0.6f, &texMgr.getTexture(texturePath.string()), {56, 56},
+		                                       {0, 0});
 
-		playerAnim.addAnimationFromSpritesheet(States::Attacking, 6, 0.6f, &texMgr.GetTexture(texturePath.string()),
+		playerAnim.addAnimationFromSpritesheet(State::Attacking, 6, 0.6f, &texMgr.getTexture(texturePath.string()),
 		                                       {56, 56}, {0, 56});
 
-		playerAnim.addAnimationFromSpritesheet(States::Walking, 8, 0.8f, &texMgr.GetTexture(texturePath.string()),
+		playerAnim.addAnimationFromSpritesheet(State::Walking, 8, 0.8f, &texMgr.getTexture(texturePath.string()),
 		                                       {56, 56}, {0, 112});
 
-		playerAnim.addAnimationFromSpritesheet(States::Jumping, 8, 0.4f, &texMgr.GetTexture(texturePath.string()),
+		playerAnim.addAnimationFromSpritesheet(State::Jumping, 8, 0.4f, &texMgr.getTexture(texturePath.string()),
 		                                       {56, 56}, {0, 168});
 
-		playerAnim.addAnimationFromSpritesheet(States::Falling, 8, 0.4f, &texMgr.GetTexture(texturePath.string()),
+		playerAnim.addAnimationFromSpritesheet(State::Falling, 8, 0.4f, &texMgr.getTexture(texturePath.string()),
 		                                       {56, 56}, {0, 224});
 
-		registry.register_component(e, playerAnim);
+		registry.registerComponent(e, playerAnim);
 
-		registry.register_component(e, StateComponent{States::Idle});
-		registry.register_component(e, InputComponent{});
-		registry.register_component(e, MovementComponent{});
-		registry.register_component(e, JumpComponent{});
+		registry.registerComponent(e, StateComponent{State::Idle});
+		registry.registerComponent(e, InputComponent{});
+		registry.registerComponent(e, MovementComponent{});
+		registry.registerComponent(e, JumpComponent{});
 
-		registry.register_component(e, InteractionComponent{19, 25, 21, 32});
+		registry.registerComponent(e, InteractionComponent{19, 25, 21, 32});
 		return e;
 	}
 };

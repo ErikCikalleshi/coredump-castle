@@ -1,13 +1,13 @@
 #pragma once
+#include "Engine/ECS/Components/Core/StateComponent.hpp"
 #include "Engine/ECS/Components/Core/VelocityComponent.hpp"
 #include "Engine/ECS/Components/Physics/GroundedComponent.hpp"
-#include "Engine/ECS/Components/Core/StateComponent.hpp"
 #include "Engine/ECS/Registry.hpp"
 
 namespace GameEngine::ECS::Systems {
 class StateSystem {
   public:
-	static void Update(Registry &registry)
+	static void update(Registry &registry)
 	{
 		auto view = registry.view<StateComponent, VelocityComponent, GroundedComponent>();
 		for (auto entity : view) {
@@ -16,20 +16,20 @@ class StateSystem {
 			auto &ground = view.get<GroundedComponent>(entity);
 			if (!ground.grounded) {
 				if (vel.velocity.y < 0) {
-					state.state = States::Jumping;
+					state.state = State::Jumping;
 				} else {
-					state.state = States::Falling;
+					state.state = State::Falling;
 				}
 			} else {
 				if (std::abs(vel.velocity.x) > 0.1f) {
-					state.state = States::Walking;
+					state.state = State::Walking;
 				} else {
-					state.state = States::Idle;
+					state.state = State::Idle;
 				}
 			}
 
-			if (DebugSystem::Instance().player.showState) {
-				DebugSystem::Debug("Entity " + std::to_string(entity) + " State: " + std::to_string(state.state));
+			if (DebugSystem::instance().player.showState) {
+				DebugSystem::debug("Entity " + std::to_string(entity) + " State: " + toString(state.state));
 			}
 		}
 	}

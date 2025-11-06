@@ -15,7 +15,7 @@ class Registry {
 
   public:
 	template <typename T>
-	ComponentStorage<T> &get_storage()
+	ComponentStorage<T> &getStorage()
 	{
 		static const std::type_index id = std::type_index(typeid(T)); // cached once
 		auto it = storagePools.find(id);
@@ -29,15 +29,12 @@ class Registry {
 
 	int size() const { return next; }
 
-	Entity create()
-	{
-		return next++;
-	}
+	Entity create() { return next++; }
 
 	template <typename T>
-	void register_component(Entity entity, T component)
+	void registerComponent(Entity entity, T component)
 	{
-		get_storage<T>().add_component(entity, std::move(component));
+		getStorage<T>().addComponent(entity, std::move(component));
 	}
 
 	template <typename T>
@@ -45,19 +42,19 @@ class Registry {
 	{
 		if (!storagePools.count(std::type_index(typeid(T))))
 			return false;
-		return get_storage<T>().contains_component(entity);
+		return getStorage<T>().containsComponent(entity);
 	}
 
 	template <typename T>
 	void remove(Entity entity)
 	{
-		get_storage<T>().remove_component(entity);
+		getStorage<T>().removeComponent(entity);
 	}
 
 	template <typename T>
 	T &get(Entity entity)
 	{
-		return get_storage<T>().get_component(entity);
+		return getStorage<T>().getComponent(entity);
 	}
 
 	template <typename... Components>

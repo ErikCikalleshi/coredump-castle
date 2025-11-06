@@ -1,0 +1,9 @@
+﻿fail_fast: false
+files: ^(src|tests)/
+repos:
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: master
+    hooks:
+      - id: clang-format
+        args: [-i]
+      - id: clang-tidy
