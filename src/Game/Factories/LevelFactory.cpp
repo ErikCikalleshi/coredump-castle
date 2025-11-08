@@ -11,7 +11,7 @@
 #include <glm/vec2.hpp>
 
 LevelFactory::LevelFactory(GameEngine::ECS::Registry &registry, TextureManager &textureManager)
-    : registry(registry), textureManager(textureManager){};
+    : registry(registry), textureManager(textureManager) {};
 
 GameEngine::ECS::Entity LevelFactory::createLevel(tson::Map &map, const glm::vec2 &pos)
 {
@@ -40,7 +40,7 @@ GameEngine::ECS::Entity LevelFactory::createLevel(tson::Map &map, const glm::vec
 	const std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 
 	const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - now).count();
-	SDL_Log("Level loaded in %ld ms\n", duration);
+	SDL_Log("Level loaded in %ld ms\n", static_cast<long>(duration));
 
 	return level;
 }
@@ -102,7 +102,7 @@ void LevelFactory::createTile(const int layerIndex, const glm::vec2 &levelPos, t
 	registry.registerComponent(entity, positionComponent);
 
 	if (tile.getAnimation().any()) {
-		loadAnimation(&tile, entity);
+		animationFactory.loadAnimation(&tile, entity);
 	}
 
 	if (tile.getProp("collidable")) {
@@ -129,30 +129,6 @@ void LevelFactory::loadTiles(const tson::Layer &layer, const int layerIndex, con
 			createTile(layerIndex, levelPos, *tile, position * tileSize);
 		}
 	}
-}
-
-void LevelFactory::loadAnimation(tson::Tile *const &tile, const GameEngine::ECS::Entity entity) const
-{
-	const auto imageSize = glm::ivec2(tile->getImageSize().x, tile->getImageSize().y);
-
-	const auto &animation = tile->getAnimation();
-	const auto framesCount = animation.size();
-	const auto tileset = tile->getTileset();
-
-	AnimationComponent animComp;
-	animComp.animations.emplace_back(static_cast<int>(framesCount),
-	                                 framesCount * 0.07f); // textures have frame duration of 0.1s
-
-	std::vector<AnimationFrame> frames;
-	for (const auto frame : animation.getFrames()) {
-		AnimationFrame animFrame{};
-		animFrame.texture = &textureManager.getTexture(basePath / tileset->getTile(frame.getTileId())->getImage());
-		animFrame.tileMapPosition = glm::ivec2{0, 0};
-		animFrame.tileSize = imageSize;
-		frames.push_back(animFrame);
-	}
-	animComp.frames.push_back(frames);
-	registry.registerComponent(entity, animComp);
 }
 
 void LevelFactory::loadBackground(const tson::Layer &layer, const int layerIndex, const glm::vec2 &levelPos) const

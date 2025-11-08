@@ -11,35 +11,59 @@ struct AnimationFrame {
 	glm::ivec2 tileMapPosition{};
 };
 
-struct AnimationComponent {
-	std::vector<std::vector<AnimationFrame>> frames{};
-	std::vector<Animation> animations{};
-	int currentAnimation = 0;
-	int previousAnimation = 0;
-	std::unordered_map<int, int> stateToAnimationIndex{};
+enum class AnimationType { None, Idle, Walking, JumpStart, FlyingUp, JumpReload, Falling, Landing, Attacking };
 
-	void addAnimationFromSpritesheet(const State &state, int frameCount, float length, SDL_Texture *texture,
+class AnimationComponent {
+  public:
+	void addAnimation(const AnimationType &type, const std::vector<AnimationFrame> &animationFrames, float duration)
+	{
+		animations[type] = Animation(static_cast<int>(animationFrames.size()), duration);
+		frames[type] = animationFrames;
+	}
+
+	void addAnimationFromSpritesheet(const AnimationType &type, int frameCount, float length, SDL_Texture *texture,
 	                                 glm::ivec2 tileSize, glm::ivec2 tileMapPos)
 	{
-		int stateIndex = static_cast<int>(state);
-		const Animation anim(frameCount, length);
-		if (stateIndex >= animations.size()) {
-			animations.resize(stateIndex + 1);
-		}
-		animations[stateIndex] = anim;
+		animations[type] = Animation(frameCount, length);
 
 		std::vector<AnimationFrame> animationFrames{};
+		for (int i = 0; i < frameCount; i++) {
+			animationFrames.push_back({texture, tileSize, glm::ivec2(tileMapPos.x + i * tileSize.x, tileMapPos.y)});
+		}
 
-		for (size_t i = 0; i < frameCount; i++) {
-			AnimationFrame frame{};
-			frame.texture = texture;
-			frame.tileSize = tileSize;
-			frame.tileMapPosition = glm::ivec2(tileMapPos.x + i * tileSize.x, tileMapPos.y);
-			animationFrames.push_back(frame);
-		}
-		if (stateIndex >= frames.size()) {
-			frames.resize(stateIndex + 1);
-		}
-		frames[stateIndex] = animationFrames;
+		frames[type] = animationFrames;
 	}
+
+	bool hasAnimation(const AnimationType &type) const { return animations.contains(type); };
+
+	AnimationFrame &currentFrame(const AnimationType &type)
+	{
+		return frames.at(type).at(animations.at(type).currentFrame());
+	}
+
+	bool hasFinished(const AnimationType &type) const
+	{
+		if (!animations.contains(type)) {
+			return true; // when an animation is missing always mark it as finished so it does not block the animation
+			             // queue
+		}
+		return animations.at(type).completed();
+	}
+
+	void stepAnimation(const AnimationType &type, const float deltaTime) { animations.at(type).step(deltaTime); }
+
+	AnimationType getAnimation() const { return currentAnimation; }
+	void setAnimation(const AnimationType &type)
+	{
+		if (currentAnimation != type) {
+			startAnimation(type);
+		}
+		currentAnimation = type;
+	}
+
+  private:
+	void startAnimation(const AnimationType &type) { animations.at(type).start(); }
+	std::unordered_map<AnimationType, Animation> animations{};
+	std::unordered_map<AnimationType, std::vector<AnimationFrame>> frames{};
+	AnimationType currentAnimation = AnimationType::None;
 };

@@ -2,8 +2,11 @@
 files: ^(src|tests)/
 repos:
   - repo: https://github.com/pocc/pre-commit-hooks
-    rev: master
+    rev: v1.3.5
     hooks:
       - id: clang-format
         args: [-i]
       - id: clang-tidy
+        args:
+          - -p=out/build/debug
+          - -header-filter=src/
