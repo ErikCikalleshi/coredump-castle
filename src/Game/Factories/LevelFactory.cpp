@@ -2,12 +2,14 @@
 #include "Engine/ECS/Components/Core/LevelComponent.hpp"
 #include "Engine/ECS/Components/Core/PortalComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/InteractionComponent.hpp"
+#include "Engine/ECS/Components/Gameplay/KeyComponent.hpp"
+#include "Engine/ECS/Components/Gameplay/LockComponent.hpp"
 #include "Engine/ECS/Components/Physics/CollisionComponent.hpp"
 #include "Engine/ECS/Components/Render/BackgroundComponent.hpp"
 #include "Engine/ECS/Components/Render/SpriteComponent.hpp"
 #include "Engine/ECS/Components/Tags/InactiveTag.hpp"
 #include "Game/Factories/PlayerFactory.hpp"
-#include "math.h"
+
 #include <glm/vec2.hpp>
 
 LevelFactory::LevelFactory(GameEngine::ECS::Registry &registry, TextureManager &textureManager)
@@ -69,8 +71,8 @@ void LevelFactory::loadLayer(tson::Layer &layer, int &layerIndex, const glm::vec
 	layerIndex++;
 }
 
-void LevelFactory::createTile(const int layerIndex, const glm::vec2 &levelPos, tson::Tile &tile,
-                              const glm::vec2 position) const
+GameEngine::ECS::Entity LevelFactory::createTile(const int layerIndex, const glm::vec2 &levelPos, tson::Tile &tile,
+                                                 const glm::vec2 position) const
 {
 	const auto tileSize = glm::vec2(tile.getTileSize().x, tile.getTileSize().y);
 	glm::ivec2 imageSize = glm::ivec2(tile.getImageSize().x, tile.getImageSize().y);
@@ -118,15 +120,21 @@ void LevelFactory::createTile(const int layerIndex, const glm::vec2 &levelPos, t
 			    entity, CollisionComponent{0, 0, static_cast<float>(tileSize.x), static_cast<float>(tileSize.y)});
 		}
 	}
+
+	return entity;
 }
-void LevelFactory::loadTiles(const tson::Layer &layer, const int layerIndex, const glm::vec2 &levelPos) const
+void LevelFactory::loadTiles(tson::Layer &layer, const int layerIndex, const glm::vec2 &levelPos) const
 {
 	std::map<std::tuple<int, int>, tson::Tile *> tileData = layer.getTileData();
 	for (const auto &[tilePos, tile] : tileData) {
 		if (tile != nullptr) {
 			const glm::ivec2 position = glm::ivec2(std::get<0>(tilePos), std::get<1>(tilePos));
 			const glm::ivec2 tileSize = glm::ivec2(tile->getTileSize().x, tile->getTileSize().y);
-			createTile(layerIndex, levelPos, *tile, position * tileSize);
+			const GameEngine::ECS::Entity entity = createTile(layerIndex, levelPos, *tile, position * tileSize);
+			if (layer.getProperties().hasProperty("lock")) {
+				const auto lock = LockComponent{layer.get<int>("lock")};
+				registry.registerComponent(entity, lock);
+			}
 		}
 	}
 }
@@ -168,7 +176,14 @@ void LevelFactory::loadObjects(tson::Layer &layer, int layerIndex, const glm::ve
 			const int tilesetGid = tileset->getFirstgid();
 			if (const auto tile = tileset->getTile(obj.getGid() - tilesetGid + 1); tile != nullptr) {
 				auto position = glm::vec2(obj.getPosition().x, obj.getPosition().y - obj.getSize().y);
-				createTile(layerIndex, levelPos, *tile, position);
+				const GameEngine::ECS::Entity entity = createTile(layerIndex, levelPos, *tile, position);
+
+				if (obj.getProp("key")) {
+					const auto key = obj.get<int>("key");
+					registry.registerComponent(entity, KeyComponent{key});
+					registry.registerComponent(entity, InteractionComponent{0, 0, static_cast<float>(obj.getSize().x),
+					                                                        static_cast<float>(obj.getSize().y)});
+				}
 			}
 		}
 	}
