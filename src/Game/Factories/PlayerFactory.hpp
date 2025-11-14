@@ -3,6 +3,7 @@
 #include "Engine/ECS/Components/Core/PositionComponent.hpp"
 #include "Engine/ECS/Components/Core/StateComponent.hpp"
 #include "Engine/ECS/Components/Core/VelocityComponent.hpp"
+#include "Engine/ECS/Components/Gameplay/Combat/AttackComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/InputComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/InteractionComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/InventoryComponent.hpp"
@@ -42,6 +43,8 @@ class PlayerFactory {
 		registry.registerComponent(e, InventoryComponent{});
 
 		registry.registerComponent(e, StateComponent{});
+
+		registry.registerComponent(e, AttackComponent{.attackTimer = {0.6f}, .attackCoolDownTimer = {0.2f}});
 
 		if (const auto prop = player.getProp("animations"); prop != nullptr && prop->getType() == tson::Type::File) {
 

@@ -3,7 +3,7 @@
 
 enum class State { Idle, Walking, Jumping, Falling, Attacking };
 
-inline std::string toString(State state)
+inline std::string toString(const State state)
 {
 	switch (state) {
 	case State::Idle:
