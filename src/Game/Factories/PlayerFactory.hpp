@@ -62,7 +62,7 @@ class PlayerFactory {
 
 		registry.registerComponent(e, InputComponent{});
 		registry.registerComponent(e, MovementComponent{});
-		registry.registerComponent(e, JumpComponent{});
+		registry.registerComponent(e, JumpComponent{.maxJumps = 2, .coyoteTimer = {0.08f}});
 
 		registry.registerComponent(e, InteractionComponent{19, 25, 21, 32});
 		return e;
