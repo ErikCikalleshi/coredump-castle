@@ -1,7 +1,9 @@
+#include "Engine/ECS/Components/Tags/PlayerTag.hpp"
+#include "Engine/ECS/Systems/Combat/AttackSystem.hpp"
 #include "Engine/GameEngine.hpp"
+
 #include <Engine/ECS/Components/Gameplay/Combat/AttackComponent.hpp>
 #include <Engine/ECS/Components/Gameplay/InputComponent.hpp>
-#include <Engine/ECS/Systems/CombatSystem/AttackSystem.hpp>
 
 #include <gtest/gtest.h>
 
@@ -20,6 +22,7 @@ class AttackSystemTest : public ::testing::Test {
 
 		attackComp.attackCoolDownTimer.step(0.2s, false);
 
+		registry.registerComponent(entity, PlayerTag{});
 		registry.registerComponent<AttackComponent>(entity, attackComp);
 		registry.registerComponent<InputComponent>(entity, InputComponent{});
 	}
