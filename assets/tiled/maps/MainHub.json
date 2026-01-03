@@ -340,6 +340,11 @@
                          "name":"area",
                          "type":"object",
                          "value":23
+                        }, 
+                        {
+                         "name":"hitBox",
+                         "type":"string",
+                         "value":"6,10,21,13"
                         }],
                  "rotation":0,
                  "template":"..\/objects\/baseEnemy.tj",
@@ -415,6 +420,12 @@
                 }, 
                 {
                  "id":19,
+                 "properties":[
+                        {
+                         "name":"hitBox",
+                         "type":"string",
+                         "value":"6,10,21,13"
+                        }],
                  "template":"..\/objects\/Player.tj",
                  "x":116.75,
                  "y":887
