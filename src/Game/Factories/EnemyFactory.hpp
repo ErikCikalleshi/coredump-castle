@@ -1,27 +1,27 @@
 #pragma once
-#include "../../Engine/ECS/Components/Core/PositionComponent.hpp"
-#include "../../Engine/ECS/Components/Core/StateComponent.hpp"
-#include "../../Engine/ECS/Components/Core/TransformComponent.hpp"
-#include "../../Engine/ECS/Components/Core/VelocityComponent.hpp"
-#include "../../Engine/ECS/Components/Physics/AccelerationComponent.hpp"
-#include "../../Engine/ECS/Components/Physics/CollisionComponent.hpp"
-#include "../../Engine/ECS/Components/Physics/GravityComponent.hpp"
-#include "../../Engine/ECS/Components/Physics/GroundedComponent.hpp"
-#include "../../Engine/ECS/Components/Render/RenderComponent.hpp"
-#include "../../Engine/ECS/Registry.hpp"
-#include "../../Engine/Graphics/TextureManager.hpp"
+
 #include "AnimationFactory.hpp"
 #include "Engine/DebugSystem.hpp"
+#include "Engine/ECS/Components/Core/PositionComponent.hpp"
+#include "Engine/ECS/Components/Core/StateComponent.hpp"
+#include "Engine/ECS/Components/Core/TransformComponent.hpp"
+#include "Engine/ECS/Components/Core/VelocityComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/Combat/HealthComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/InputComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/MovementComponent.hpp"
 #include "Engine/ECS/Components/Render/BlinkComponent.hpp"
 
-#include <Engine/ECS/Components/Gameplay/Combat/AttackComponent.hpp>
-#include <Engine/ECS/Components/Gameplay/Combat/HitBoxComponent.hpp>
-#include <Engine/ECS/Components/Gameplay/Combat/HurtBoxComponent.hpp>
-#include <Engine/ECS/Components/Gameplay/Enemy/PatrolComponent.hpp>
-#include <Engine/ECS/Components/Tags/EnemyTag.hpp>
+#include "Engine/ECS/Components/Gameplay/Combat/AttackComponent.hpp"
+#include "Engine/ECS/Components/Gameplay/Combat/HitBoxComponent.hpp"
+#include "Engine/ECS/Components/Gameplay/Combat/HurtBoxComponent.hpp"
+#include "Engine/ECS/Components/Gameplay/Enemy/ChaseComponent.hpp"
+#include "Engine/ECS/Components/Gameplay/Enemy/PatrolComponent.hpp"
+#include "Engine/ECS/Components/Physics/AccelerationComponent.hpp"
+#include "Engine/ECS/Components/Physics/CollisionComponent.hpp"
+#include "Engine/ECS/Components/Physics/GravityComponent.hpp"
+#include "Engine/ECS/Components/Physics/GroundedComponent.hpp"
+#include "Engine/ECS/Components/Render/RenderComponent.hpp"
+#include "Engine/ECS/Components/Tags/EnemyTag.hpp"
 #include <tileson.hpp>
 
 class EnemyFactory {
@@ -35,11 +35,14 @@ class EnemyFactory {
 
 		const auto scale = getFloatProp(enemyObj, "scale", 1.0f);
 		const auto maxSpeedX = getFloatProp(enemyObj, "maxSpeedX", 50.0f);
+		const auto chaseSpeed = getFloatProp(enemyObj, "chaseSpeed", 0.0f);
+		const auto verticalDetectionHeight = getFloatProp(enemyObj, "verticalDetectionHeight", 50.0f);
 		const auto canPatrol = getBoolProp(enemyObj, "canPatrol");
 		const auto collisionStr = getStringProp(enemyObj, "collisionBox", "0,0,0,0");
 		const auto hitBoxStr = getStringProp(enemyObj, "hitBox", "");
-		const auto isBodyHitBox = getBoolProp(enemyObj, "isBodyHitBox");
 		const auto maxHealth = getIntProp(enemyObj, "maxHealth", 100);
+		const auto attackCooldown = getFloatProp(enemyObj, "attackCooldown", 0.5);
+		const auto reactionDelay = getFloatProp(enemyObj, "reactionDelay", 0.5);
 
 		const tson::Vector2 pos = enemyObj.getPosition();
 		const glm::vec2 spawn = glm::vec2(pos.x, pos.y) + levelPos;
@@ -57,10 +60,16 @@ class EnemyFactory {
 		registry.registerComponent(entity, InputComponent{});
 		registry.registerComponent(entity, MovementComponent{.maxSpeedX = maxSpeedX});
 		registry.registerComponent(entity, BlinkComponent{});
-		registry.registerComponent(entity, HealthComponent{maxHealth, maxHealth, 0.6s});
+
+		SDL_FRect weaponHitBox = {0.f, 0.f, 0.f, 0.f};
+		if (hitBoxStr) {
+			weaponHitBox = parseCollisionBox(hitBoxStr.value());
+		}
 
 		if (collisionStr) {
 			const auto collisionBox = parseCollisionBox(collisionStr.value());
+			registry.registerComponent(entity, HitBoxComponent{.bodyHitBox = parseCollisionBox(collisionStr.value()),
+			                                                   .weaponHitBox = weaponHitBox});
 			registry.registerComponent(entity, CollisionComponent{collisionBox});
 			registry.registerComponent(entity, HurtBoxComponent{collisionBox});
 		}
@@ -70,17 +79,37 @@ class EnemyFactory {
 				registry.registerComponent(entity,
 				                           PatrolComponent{.minBounds = patrolRect->min, .maxBounds = patrolRect->max});
 			}
-		}
-
-		registry.registerComponent(entity,
-		                           AttackComponent{.attackTimer = Timer{1s}, .attackCoolDownTimer = Timer{0.2s}});
-
-		if (hitBoxStr) {
-			const auto hitBox = parseCollisionBox(hitBoxStr.value());
-			registry.registerComponent(entity, HitBoxComponent{.hitbox = hitBox, .isBodyHitBox = isBodyHitBox});
+			if (chaseSpeed > 0.0f) {
+				registry.registerComponent(
+				    entity, ChaseComponent{.verticalDetectionHeight = verticalDetectionHeight,
+				                           .chaseSpeed = chaseSpeed,
+				                           .originalPatrolSpeed = maxSpeedX,
+				                           .reactionDelay = Timer{std::chrono::duration<float>(reactionDelay)}});
+			}
 		}
 
 		AnimationFactory::loadAnimationsFromTileset(registry, texMgr, map, enemyObj, entity);
+
+		using namespace std::chrono_literals;
+		std::chrono::duration<float> attackDuration = 1s;
+		std::chrono::duration<float> invulnerabilityTime = 1s;
+
+		if (registry.has<AnimationComponent>(entity)) {
+			auto &animComp = registry.get<AnimationComponent>(entity);
+			if (animComp.hasAnimation(AnimationType::Attacking)) {
+				attackDuration = animComp.getAnimationDuration(AnimationType::Attacking);
+			}
+			if (animComp.hasAnimation(AnimationType::Hurting)) {
+				invulnerabilityTime = animComp.getAnimationDuration(AnimationType::Hurting);
+			}
+		}
+
+		registry.registerComponent(entity, HealthComponent{maxHealth, maxHealth, invulnerabilityTime});
+
+		registry.registerComponent(
+		    entity, AttackComponent{.attackTimer = Timer{attackDuration},
+		                            .attackCoolDownTimer = Timer{std::chrono::duration<float>(attackCooldown)}});
+
 		return entity;
 	}
 
