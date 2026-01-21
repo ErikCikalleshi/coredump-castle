@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_render.h>
 #include <string>
 #include <vector>
 
@@ -11,7 +12,6 @@ struct DebugRenderOptions {
 
 struct DebugPlayerOptions {
 	bool showState = false;
-
 	bool godMode = false;
 	bool noClip = false;
 };
@@ -23,22 +23,28 @@ struct DebugRect {
 
 class DebugSystem {
   public:
-	DebugRenderOptions render;
-	DebugPlayerOptions player;
-	std::vector<DebugRect> debugRects{};
-	std::vector<std::string> debugMessages{};
-
 	static DebugSystem &instance()
 	{
 		static DebugSystem instance;
 		return instance;
 	}
 
-	static void debug(const std::string &message) { instance().debugMessages.push_back(message); }
+	static void debug(const std::string &message);
+	static void addRect(const SDL_FRect &rect, const SDL_Color &color);
+	static void clear();
 
-	static void clear()
-	{
-		instance().debugRects.clear();
-		instance().debugMessages.clear();
-	}
+	static void renderGameOverlay(SDL_Renderer *renderer, const SDL_FRect &viewport);
+	static void drawUI();
+
+	void toggle() { enabled = !enabled; }
+
+	const DebugRenderOptions &getRenderOptions() const { return render; }
+	const DebugPlayerOptions &getPlayerOptions() const { return player; }
+
+  private:
+	bool enabled = false;
+	std::vector<DebugRect> debugRects{};
+	std::vector<std::string> debugMessages{};
+	DebugRenderOptions render;
+	DebugPlayerOptions player;
 };

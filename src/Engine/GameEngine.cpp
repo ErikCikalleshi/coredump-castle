@@ -4,10 +4,12 @@
 #include "FileIO/FileSaveStorage.hpp"
 #include "GameState.hpp"
 
+#include <imgui_impl_sdl3.h>
+
 namespace GameEngine {
 
 GameEngine::GameEngine(const std::string &title, const Resolution resolution)
-    : renderer(title, resolution), textureManager(renderer), saveSystem(std::make_unique<ECS::FileSaveStorage>()){};
+    : renderer(title, resolution), textureManager(renderer), saveSystem(std::make_unique<ECS::FileSaveStorage>()) {};
 
 GameEngine::~GameEngine()
 {
@@ -70,6 +72,8 @@ void GameEngine::handleEvents()
 {
 	SDL_Event event{0};
 	while (SDL_PollEvent(&event)) {
+		ImGui_ImplSDL3_ProcessEvent(&event);
+
 		switch (event.type) {
 		case SDL_EVENT_QUIT:
 			running = false;
@@ -80,6 +84,9 @@ void GameEngine::handleEvents()
 			break;
 
 		case SDL_EVENT_KEY_DOWN:
+			if (event.key.key == SDLK_F3) {
+				DebugSystem::instance().toggle();
+			}
 		case SDL_EVENT_KEY_UP:
 			inputManager.processEvent(&event.key);
 			break;
