@@ -60,22 +60,24 @@ class Renderer {
 	[[nodiscard]] Resolution getLogicalResolution() const;
 	[[nodiscard]] glm::vec2 windowToLogical(float windowX, float windowY) const;
 
-	[[nodiscard]] SDL_Renderer* getNativeRenderer() const;
-	[[nodiscard]] TTF_TextEngine* getTextEngine() const;
+	[[nodiscard]] SDL_Renderer *getNativeRenderer() const;
+	[[nodiscard]] TTF_TextEngine *getTextEngine() const;
+	void renderTexture(SDL_Texture &texture, const std::optional<SDL_FRect> &srcRect,
+	                   const std::optional<SDL_FRect> &dstRect, const bool flip) const;
 
-	[[nodiscard]] std::unique_ptr<SDL_Texture, SDLTextureDeleter> loadTexture(const std::filesystem::path &filePath) const;
+	[[nodiscard]] std::unique_ptr<SDL_Texture, SDLTextureDeleter>
+	loadTexture(const std::filesystem::path &filePath) const;
 	static std::unique_ptr<TTF_Font, TTFFontCloser> loadFont(const std::filesystem::path &filePath, int fontSize);
 	std::unique_ptr<TTF_Text, TTFTextDestroyer> createText(TTF_Font *font, const std::string &text) const;
-	void renderTexture(SDL_Texture &texture, std::optional<SDL_FRect> srcRect, std::optional<SDL_FRect> dstRect,
-	                   bool flip) const;
 	void drawRectShape(SDL_FRect rect, SDL_Color fillColor, SDL_Color outlineColor) const;
-	void drawText(TTF_Text* textObject, float x, float y) const;
+	void drawText(TTF_Text *textObject, float x, float y) const;
 	void renderTextureTiled(SDL_Texture &texture, SDL_FRect &dstRect, float scrollFactor) const;
 	void renderCircularFade(float progress, SDL_FColor color = {0, 0, 0, 255});
 
   private:
 	void setupImGui() const;
 	static void startImGuiFrame();
+	bool isInViewport(const SDL_FRect &rect) const;
 	Resolution currentResolution{1920, 1080};
 	Resolution logicalResolution{768, 432};
 

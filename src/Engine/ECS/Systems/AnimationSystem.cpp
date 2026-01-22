@@ -1,4 +1,5 @@
 ﻿#include "AnimationSystem.hpp"
+#include "Engine/Debug/ScopedProfiler.hpp"
 #include "Engine/ECS/Components/Core/StateComponent.hpp"
 #include "Engine/ECS/Components/Render/AnimationComponent.hpp"
 #include "Engine/ECS/Components/Render/SpriteComponent.hpp"
@@ -86,6 +87,7 @@ void handleLanding(AnimationComponent &anim, const AnimationType fallback)
 
 void GameEngine::ECS::Systems::AnimationSystem::update(Registry &registry, const float deltaTime)
 {
+	PROFILE_SCOPE("AnimationSystem");
 	for (auto view = registry.view<AnimationComponent, SpriteComponent>(); const auto entity : view) {
 		auto &anim = view.get<AnimationComponent>(entity);
 		auto &[texture, tileSize, tileMapPosition, alpha] = view.get<SpriteComponent>(entity);

@@ -47,6 +47,7 @@ void PlayState::handleEvents(GameEngine &game, const SDL_Event &event) {}
 
 void PlayState::update(GameEngine &game, const float deltaTime)
 {
+	PROFILE_SCOPE("AllSystems");
 	if (paused) {
 		return;
 	}
@@ -55,18 +56,17 @@ void PlayState::update(GameEngine &game, const float deltaTime)
 
 	inputSystem.update(game.getRegistry());
 
-	ECS::Systems::PatrolSystem::update(game.getRegistry());
-	ECS::Systems::ChaseSystem::update(game.getRegistry(), deltaTime);
 	ECS::Systems::HitDetectionSystem::update(game.getRegistry());
-
+	ECS::Systems::ChaseSystem::update(game.getRegistry(), deltaTime);
 	ECS::Systems::JumpSystem::update(game.getRegistry(), deltaTime);
-	ECS::Systems::MovementSystem::update(game.getRegistry(), deltaTime);
 	ECS::Systems::AttackSystem::update(game.getRegistry(), deltaTime,
 	                                   [&](const ECS::Entity e) { effectFactory.createAttackEffect(e); });
 
 	accumulator += deltaTime;
 	while (accumulator >= stepSize) {
 		accumulator -= stepSize;
+		ECS::Systems::PatrolSystem::update(game.getRegistry());
+		ECS::Systems::MovementSystem::update(game.getRegistry(), stepSize);
 		ECS::Systems::PhysicsSystem::update(game.getRegistry(), stepSize);
 	}
 

@@ -2,7 +2,7 @@
 
 #include "Combat/AttackSystem.hpp"
 #include "Combat/HealthSystem.hpp"
-#include "Engine/DebugSystem.hpp"
+#include "Engine/Debug/DebugSystem.hpp"
 #include "Engine/ECS/Components/Core/StateComponent.hpp"
 #include "Engine/ECS/Components/Core/VelocityComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/Combat/AttackComponent.hpp"

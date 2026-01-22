@@ -1,6 +1,5 @@
 #pragma once
-#include "ECS/Registry.hpp"
-
+#include "Engine/ECS/Registry.hpp"
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
@@ -57,4 +56,11 @@ class DebugSystem {
 	DebugPlayerOptions player;
 	DebugSkipMenuOptions skipMenu;
 	GameEngine::ECS::Registry *registry = nullptr;
+	void drawCollisionBoxes() const;
+	void drawHitBoxes() const;
+	void updateFPS();
+
+	static constexpr int fpsHistorySize = 400;
+	std::array<float, fpsHistorySize> fpsHistory{};
+	int fpsOffset = 0;
 };
