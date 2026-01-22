@@ -5,9 +5,12 @@
 #include "Engine/ECS/Components/Gameplay/Combat/HitBoxComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/Combat/HurtBoxComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/MovementComponent.hpp"
+#include "Engine/ECS/Components/Gameplay/TooltipComponent.hpp"
 #include "Engine/ECS/Components/Physics/CollisionComponent.hpp"
 #include "Engine/ECS/Components/Render/RenderComponent.hpp"
+#include "Engine/ECS/Components/Tags/PlayerTag.hpp"
 #include "Engine/ECS/View.hpp"
+#include "Engine/Utils/HitBoxUtils.hpp"
 #include "Profiler.hpp"
 
 #include <imgui.h>
@@ -34,6 +37,7 @@ void DebugSystem::renderGameOverlay(SDL_Renderer *renderer, const SDL_FRect &vie
 	DebugSystem &sys = instance();
 	sys.drawCollisionBoxes();
 	sys.drawHitBoxes();
+	sys.drawTooltopBoxes();
 
 	for (const auto &[rect, color] : sys.debugRects) {
 		SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
@@ -68,10 +72,12 @@ void DebugSystem::drawUI()
 		if (ImGui::CollapsingHeader("Render Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Checkbox("Show Bounding Boxes", &sys.render.showBoundingBoxes);
 			ImGui::Checkbox("Show Hit Boxes", &sys.render.showHitBoxes);
+			ImGui::Checkbox("Show Tooltip Boxes", &sys.render.showTooltipBoxes);
 		}
 
 		if (ImGui::CollapsingHeader("Player Cheats", ImGuiTreeNodeFlags_DefaultOpen)) {
 			ImGui::Checkbox("Show State", &sys.player.showState);
+			ImGui::Checkbox("Show Position", &sys.player.showPosition);
 			ImGui::Checkbox("God Mode", &sys.player.godMode);
 			ImGui::Checkbox("No Clip", &sys.player.noClip);
 		}
@@ -111,6 +117,12 @@ void DebugSystem::drawUI()
 			}
 			ImGui::EndChild();
 		}
+		if (sys.player.showPosition) {
+			ImGui::SeparatorText("PlayerPosition");
+			const auto player = sys.registry->view<PlayerTag>().at(0);
+			const auto &pos = sys.registry->get<PositionComponent>(player).position;
+			ImGui::Text("X: %.2f Y: %.2f", pos.x, pos.y);
+		}
 	}
 	ImGui::End();
 }
@@ -134,41 +146,39 @@ void DebugSystem::drawCollisionBoxes() const
 }
 void DebugSystem::drawHitBoxes() const
 {
-	if (!instance().getRenderOptions().showHitBoxes || !registry)
+	if (!instance().getRenderOptions().showHitBoxes || registry == nullptr) {
 		return;
+	}
 
 	for (auto view =
 	         registry
 	             ->view<HitBoxComponent, HurtBoxComponent, RenderComponent, TransformComponent, PositionComponent>();
 	     const auto entity : view) {
 
-		const auto &[bodyHitbox, weaponHitBox] = view.get<HitBoxComponent>(entity);
-		const auto &[hurtBox] = view.get<HurtBoxComponent>(entity);
-		const auto &[layer, flipX] = view.get<RenderComponent>(entity);
-		const auto &[position, previousPosition] = view.get<PositionComponent>(entity);
-		const auto &[scale, rotation] = view.get<TransformComponent>(entity);
-
-		const bool facingLeft = flipX;
-
-		SDL_FRect hitBoxRect = {0, 0, weaponHitBox.w * scale.x, weaponHitBox.h * scale.y};
-		if (facingLeft) {
-			hitBoxRect.x = position.x + hurtBox.x * scale.x - weaponHitBox.w * scale.x;
-		} else {
-			hitBoxRect.x = position.x + hurtBox.x * scale.x + hurtBox.w * scale.x;
-		}
-		hitBoxRect.y = position.y + hurtBox.y * scale.y;
-
-		if (hitBoxRect.w > 0.0f && hitBoxRect.h > 0.0f) {
+		if (const auto hitBoxRect = GameEngine::Utils::HitBoxUtils::getWeaponHitBoxRect(*registry, entity);
+		    hitBoxRect.w > 0.0f && hitBoxRect.h > 0.0f) {
 			constexpr SDL_Color hitboxColor = {0, 255, 0, 255};
 			addRect(hitBoxRect, hitboxColor);
 		}
 
-		SDL_FRect hurtBoxRect = {position.x + hurtBox.x * scale.x, position.y + hurtBox.y * scale.y,
-		                         hurtBox.w * scale.x, hurtBox.h * scale.y};
+		SDL_FRect hurtBoxRect = GameEngine::Utils::HitBoxUtils::getHurtBoxRect(*registry, entity);
 		constexpr SDL_Color hurtBoxColor = {255, 0, 255, 255};
 		addRect(hurtBoxRect, hurtBoxColor);
 	}
 }
+void DebugSystem::drawTooltopBoxes() const
+{
+	if (!instance().getRenderOptions().showTooltipBoxes || registry == nullptr) {
+		return;
+	}
+	auto view = registry->view<TooltipComponent>();
+	for (const auto entity : view) {
+		const auto &[text, box] = view.get<TooltipComponent>(entity);
+		constexpr SDL_Color tooltipBoxColor = {255, 255, 0, 255};
+		addRect(box, tooltipBoxColor);
+	}
+}
+
 void DebugSystem::updateFPS()
 {
 	fpsHistory.at(fpsOffset) = ImGui::GetIO().Framerate;

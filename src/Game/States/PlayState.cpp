@@ -16,6 +16,7 @@
 #include "Engine/ECS/Systems/RenderSystem.hpp"
 #include "Engine/ECS/Systems/RespawnSystem.hpp"
 #include "Engine/ECS/Systems/StateSystem.hpp"
+#include "Engine/ECS/Systems/TooltipSystem.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Game/Factories/WorldFactory.hpp"
 
@@ -24,7 +25,7 @@ namespace GameEngine {
 void PlayState::init(GameEngine &game)
 {
 	const std::filesystem::path projectPath = "assets/tiled/CoredumpCastle.tiled-project";
-	auto factory = WorldFactory(game.getRegistry(), projectPath, game.getTextureManager());
+	auto factory = WorldFactory(game.getRegistry(), projectPath, game.getTextureManager(), game.getInputManager());
 
 	const std::filesystem::path worldPath = "assets/tiled/coredumpCastle.world";
 	factory.createWorld(worldPath);
@@ -56,11 +57,15 @@ void PlayState::update(GameEngine &game, const float deltaTime)
 
 	inputSystem.update(game.getRegistry());
 
-	ECS::Systems::HitDetectionSystem::update(game.getRegistry());
+	ECS::Systems::HitDetectionSystem::update(game.getRegistry(),
+	                                         [&](const ECS::Entity attacker, const ECS::Entity victim) {
+		                                         effectFactory.createIsHitEffect(attacker, victim);
+	                                         });
 	ECS::Systems::ChaseSystem::update(game.getRegistry(), deltaTime);
 	ECS::Systems::JumpSystem::update(game.getRegistry(), deltaTime);
-	ECS::Systems::AttackSystem::update(game.getRegistry(), deltaTime,
-	                                   [&](const ECS::Entity e) { effectFactory.createAttackEffect(e); });
+	ECS::Systems::AttackSystem::update(game.getRegistry(), deltaTime, [&](const ECS::Entity e) {
+		effectFactory.createEffectOnEntity(e, EffectType::PlayerSwoosh);
+	});
 
 	accumulator += deltaTime;
 	while (accumulator >= stepSize) {
@@ -80,6 +85,7 @@ void PlayState::update(GameEngine &game, const float deltaTime)
 	ECS::Systems::DeathSystem::update(game.getRegistry(), deltaTime);
 
 	ECS::Systems::InteractionSystem::update(game, game.getRegistry());
+	ECS::Systems::TooltipSystem::update(game.getRegistry());
 	ECS::Systems::RespawnSystem::update(game.getRegistry(), game, deltaTime);
 }
 
