@@ -11,7 +11,7 @@ namespace GameEngine {
 
 GameEngine::GameEngine(const std::string &title, const Resolution resolution)
     : renderer(title, resolution), textureManager(renderer), fontManager(renderer),
-	saveSystem(std::make_unique<ECS::FileSaveStorage>())
+      saveSystem(std::make_unique<ECS::FileSaveStorage>())
 {
 	DebugSystem::instance().setRegistry(registry);
 };
@@ -77,7 +77,6 @@ void GameEngine::handleEvents()
 			break;
 		};
 	}
-
 }
 
 void GameEngine::update(const float deltaTime)

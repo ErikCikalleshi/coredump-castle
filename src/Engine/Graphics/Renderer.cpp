@@ -64,12 +64,12 @@ glm::vec2 Renderer::windowToLogical(const float windowX, const float windowY) co
 	return glm::vec2{logicalX, logicalY};
 }
 
-SDL_Renderer* Renderer::getNativeRenderer() const
+SDL_Renderer *Renderer::getNativeRenderer() const
 {
 	return renderer.get();
 }
 
-TTF_TextEngine* Renderer::getTextEngine() const
+TTF_TextEngine *Renderer::getTextEngine() const
 {
 	return textEngine.get();
 }
@@ -80,7 +80,8 @@ std::unique_ptr<SDL_Texture, SDLTextureDeleter> Renderer::loadTexture(const std:
 	if (!tex) {
 		throw std::runtime_error(SDL_GetError());
 	}
-	SDL_SetTextureScaleMode(tex, SDL_ScaleMode::SDL_SCALEMODE_NEAREST);
+	SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_NEAREST);
+	SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
 
 	return std::unique_ptr<SDL_Texture, SDLTextureDeleter>(tex);
 }
@@ -123,7 +124,7 @@ void Renderer::endFrame() const
 	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer.get());
 
 	SDL_SetRenderLogicalPresentation(renderer.get(), logicalResolution.width, logicalResolution.height,
-									 SDL_LOGICAL_PRESENTATION_LETTERBOX);
+	                                 SDL_LOGICAL_PRESENTATION_LETTERBOX);
 	SDL_RenderPresent(renderer.get());
 }
 
@@ -239,13 +240,13 @@ void Renderer::drawRectShape(const SDL_FRect rect, const SDL_Color fillColor, co
 
 	SDL_SetRenderDrawColor(renderer.get(), fillColor.r, fillColor.g, fillColor.b, fillColor.a);
 
-    SDL_RenderFillRect(renderer.get(), &rect);
+	SDL_RenderFillRect(renderer.get(), &rect);
 
 	SDL_SetRenderDrawColor(renderer.get(), outlineColor.r, outlineColor.g, outlineColor.b, outlineColor.a);
-    SDL_RenderRect(renderer.get(), &rect);
+	SDL_RenderRect(renderer.get(), &rect);
 }
 
-void Renderer::drawText(TTF_Text* textObject, const float x, const float y) const
+void Renderer::drawText(TTF_Text *textObject, const float x, const float y) const
 {
 	TTF_DrawRendererText(textObject, x, y);
 }
