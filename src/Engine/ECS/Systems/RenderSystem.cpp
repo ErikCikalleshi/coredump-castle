@@ -4,10 +4,6 @@
 #include "Engine/ECS/Components/Core/LevelComponent.hpp"
 #include "Engine/ECS/Components/Core/PositionComponent.hpp"
 #include "Engine/ECS/Components/Core/TransformComponent.hpp"
-#include "Engine/ECS/Components/Gameplay/Combat/HitBoxComponent.hpp"
-#include "Engine/ECS/Components/Gameplay/Combat/HurtBoxComponent.hpp"
-#include "Engine/ECS/Components/Gameplay/MovementComponent.hpp"
-#include "Engine/ECS/Components/Physics/CollisionComponent.hpp"
 #include "Engine/ECS/Components/Render/BackgroundComponent.hpp"
 #include "Engine/ECS/Components/Render/BlinkComponent.hpp"
 #include "Engine/ECS/Components/Render/CenterCameraComponent.hpp"
@@ -70,8 +66,11 @@ void RenderSystem::update(Registry &registry, float alpha)
 		const auto &[layer, flipX] = view.get<RenderComponent>(entity);
 
 		glm::vec2 scale = glm::vec2(1.0f, 1.0f);
+		double rotation = 0.0;
 		if (registry.has<TransformComponent>(entity)) {
-			scale = registry.get<TransformComponent>(entity).scale;
+			const auto &transform = registry.get<TransformComponent>(entity);
+			scale = transform.scale;
+			rotation = transform.rotation;
 		}
 
 		const SDL_FRect src{.x = static_cast<float>(TileMapPosition.x),
@@ -97,6 +96,7 @@ void RenderSystem::update(Registry &registry, float alpha)
 		                                 .dst = dst,
 		                                 .parallax = false,
 		                                 .flipX = flipX,
+		                                 .angle = rotation,
 		                                 .colorMod = spriteColorMod});
 	}
 
@@ -107,7 +107,8 @@ void RenderSystem::update(Registry &registry, float alpha)
 		SDL_SetTextureAlphaMod(renderItem.texture, renderItem.colorMod.a);
 
 		if (!renderItem.parallax) {
-			renderer.renderTexture(*renderItem.texture, renderItem.src, renderItem.dst, renderItem.flipX);
+			renderer.renderTexture(*renderItem.texture, renderItem.src, renderItem.dst, renderItem.flipX,
+			                       renderItem.angle);
 		} else if (renderItem.dst.has_value()) {
 			renderer.renderTextureTiled(*renderItem.texture, renderItem.dst.value(), renderItem.scrollFactor);
 		}
