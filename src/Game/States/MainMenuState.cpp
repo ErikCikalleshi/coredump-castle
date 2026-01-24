@@ -32,6 +32,7 @@ void MainMenuState::resume()
 
 void MainMenuState::handleEvents(GameEngine &game, const SDL_Event &event)
 {
+	PROFILE_SCOPE("MainMenuState::handleEvents");
 	guiManager.handleEvent(event);
 }
 
@@ -39,6 +40,7 @@ void MainMenuState::update(GameEngine &game, const float deltaTime) {}
 
 void MainMenuState::render(GameEngine &game, const float alpha)
 {
+	PROFILE_SCOPE("MainMenuState::render");
 	guiManager.render();
 }
 
