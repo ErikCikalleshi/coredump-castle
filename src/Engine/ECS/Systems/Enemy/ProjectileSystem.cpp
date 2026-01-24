@@ -9,6 +9,7 @@
 #include "Engine/ECS/Components/Render/RenderComponent.hpp"
 #include "Engine/ECS/Components/Tags/EnemyTag.hpp"
 #include "Engine/ECS/Components/Tags/PlayerTag.hpp"
+#include "Engine/ECS/Components/Tags/ProjectileTag.hpp"
 #include "Engine/ECS/Registry.hpp"
 #include "Engine/ECS/Systems/CollisionSystem.hpp"
 #include "Engine/ECS/Systems/Combat/AttackSystem.hpp"
@@ -47,17 +48,15 @@ glm::vec2 calculateProjectileDirection(const glm::vec2 &projectileSpawnPosition,
 bool shouldSpawnProjectile(Registry &registry, const Entity entity, const AttackComponent &attack,
                            const float deltaTime)
 {
-	if (registry.has<AnimationComponent>(entity)) {
-		const auto &anim = registry.get<AnimationComponent>(entity);
-		return anim.hasAnimation(AnimationType::Fire) && anim.getAnimation() == AnimationType::Fire;
+	if (const auto anim = registry.tryGet<AnimationComponent>(entity)) {
+		return anim->get().hasAnimation(AnimationType::Fire) && anim->get().getAnimation() == AnimationType::Fire;
 	}
 
 	return attack.attackTimer.getTime() <= std::chrono::duration<float>(deltaTime * 2.0f);
 }
 void updateProjectileMovement(Registry &registry, const float deltaTime)
 {
-	for (auto projectileView =
-	         registry.view<ProjectileComponent, VelocityComponent, PositionComponent>().exclude<AttackComponent>();
+	for (auto projectileView = registry.view<ProjectileTag, ProjectileComponent, VelocityComponent, PositionComponent>();
 	     const auto entity : projectileView) {
 		const auto &velocity = projectileView.get<VelocityComponent>(entity);
 		auto &position = projectileView.get<PositionComponent>(entity);
@@ -68,10 +67,10 @@ void updateProjectileMovement(Registry &registry, const float deltaTime)
 
 void resolveProjectileWallCollisions(Registry &registry, const Utils::SpatialHash &grid)
 {
-	auto projectileView = registry.view<EnemyTag, PositionComponent, ProjectileComponent>();
+	auto projectileView = registry.view<ProjectileTag, PositionComponent, ProjectileComponent>();
 	for (const auto entity : projectileView) {
-		const auto &pos = registry.get<PositionComponent>(entity);
-		const auto &projectile = registry.get<ProjectileComponent>(entity);
+		const auto &pos = projectileView.get<PositionComponent>(entity);
+		const auto &projectile = projectileView.get<ProjectileComponent>(entity);
 
 		if (CollisionSystem::isPathObstructed(pos.previousPosition, pos.position, grid, projectile.projectileSize)) {
 			registry.deleteEntity(entity);
@@ -81,11 +80,10 @@ void resolveProjectileWallCollisions(Registry &registry, const Utils::SpatialHas
 
 void cleanUpOldProjectiles(Registry &registry)
 {
-	auto projectileView =
-	    registry.view<EnemyTag, PositionComponent, ProjectileComponent>().exclude<RangedAttackComponent>();
+	auto projectileView = registry.view<ProjectileTag, PositionComponent, ProjectileComponent>();
 	for (auto entity : projectileView) {
-		const auto &projectile = registry.get<ProjectileComponent>(entity);
-		const auto &position = registry.get<PositionComponent>(entity);
+		const auto &projectile = projectileView.get<ProjectileComponent>(entity);
+		const auto &position = projectileView.get<PositionComponent>(entity);
 
 		if (glm::distance(position.position, projectile.spawnPosition) >= projectile.maxRange) {
 			registry.deleteEntity(entity);
@@ -97,7 +95,7 @@ bool isPlayerAlive(Registry &registry)
 {
 	auto playerView = registry.view<PlayerTag, StateComponent>();
 	for (const auto entity : playerView) {
-		const auto &state = registry.get<StateComponent>(entity);
+		const auto &state = playerView.get<StateComponent>(entity);
 		return state.state != State::Dead;
 	}
 	return false;
@@ -105,7 +103,7 @@ bool isPlayerAlive(Registry &registry)
 
 void cleanUpAllProjectiles(Registry &registry)
 {
-	auto projectileView = registry.view<EnemyTag, ProjectileComponent>().exclude<RangedAttackComponent>();
+	auto projectileView = registry.view<ProjectileTag, ProjectileComponent>();
 	for (auto entity : projectileView) {
 		registry.deleteEntity(entity);
 	}
@@ -113,11 +111,11 @@ void cleanUpAllProjectiles(Registry &registry)
 
 void handleEnemySpawning(Registry &registry, float deltaTime, const ProjectileFactory &factory)
 {
-	for (auto view =
-	         registry.view<EnemyTag, AttackComponent, RangedAttackComponent, PositionComponent, HurtBoxComponent>();
+	for (auto view = registry.view<EnemyTag, AttackComponent, RangedAttackComponent, PositionComponent,
+	                               HurtBoxComponent, ProjectileComponent>();
 	     const auto entity : view) {
-		auto &attack = registry.get<AttackComponent>(entity);
-		auto &rangedAttack = registry.get<RangedAttackComponent>(entity);
+		auto &attack = view.get<AttackComponent>(entity);
+		auto &rangedAttack = view.get<RangedAttackComponent>(entity);
 
 		if (!AttackSystem::isAttacking(attack)) {
 			rangedAttack.projectileSpawned = false;
@@ -132,17 +130,15 @@ void handleEnemySpawning(Registry &registry, float deltaTime, const ProjectileFa
 			continue;
 		}
 
-		const auto &projectileSettings = registry.get<ProjectileComponent>(entity);
-		const auto &position = registry.get<PositionComponent>(entity);
-		const auto &enemyHurtBox = registry.get<HurtBoxComponent>(entity);
+		const auto &projectileSettings = view.get<ProjectileComponent>(entity);
+		const auto &position = view.get<PositionComponent>(entity);
+		const auto &enemyHurtBox = view.get<HurtBoxComponent>(entity);
 
-		glm::vec2 enemyScale{1.0f, 1.0f};
-		if (registry.has<TransformComponent>(entity)) {
-			enemyScale = registry.get<TransformComponent>(entity).scale;
-		}
+		const auto transform = registry.tryGet<TransformComponent>(entity);
+		const glm::vec2 enemyScale = transform ? transform->get().scale : glm::vec2{1.0f, 1.0f};
 
-		if (registry.has<RenderComponent>(entity)) {
-			const bool facingLeft = registry.get<RenderComponent>(entity).flipX;
+		if (const auto render = registry.tryGet<RenderComponent>(entity)) {
+			const bool facingLeft = render->get().flipX;
 
 			const glm::vec2 spawnPosition = calculateProjectileSpawnPosition(
 			    position.position, enemyHurtBox.hurtBox, enemyScale, rangedAttack.projectileOffset, facingLeft);

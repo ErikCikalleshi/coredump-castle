@@ -6,6 +6,7 @@
 #include <glm/vec2.hpp>
 #include <string>
 #include <vector>
+#include <array>
 
 struct DebugRenderOptions {
 	bool showBoundingBoxes = false;

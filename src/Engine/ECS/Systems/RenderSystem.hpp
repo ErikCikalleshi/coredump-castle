@@ -29,6 +29,8 @@ class RenderSystem {
 		double angle = 0.0;
 		SDL_Color colorMod = {255, 255, 255, 255};
 	};
+
+	static auto getRenderRank(const RenderItem &item);
 	std::vector<RenderItem> renderItems{};
 
 	Renderer &renderer;

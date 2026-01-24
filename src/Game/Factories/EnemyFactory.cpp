@@ -254,22 +254,21 @@ GameEngine::ECS::Entity GameEngine::ECS::EnemyFactory::createEnemy(tson::Object 
 	std::chrono::duration<float> attackDuration = 100ms;
 	std::chrono::duration<float> invulnerabilityTime = 300ms;
 
-	if (registry.has<AnimationComponent>(entity)) {
-		auto &animComp = registry.get<AnimationComponent>(entity);
-		if (animComp.hasAnimation(AnimationType::Attacking)) {
-			attackDuration = animComp.getAnimationDuration(AnimationType::Attacking);
+	if (auto animComp = registry.tryGet<AnimationComponent>(entity)) {
+		if (animComp->get().hasAnimation(AnimationType::Attacking)) {
+			attackDuration = animComp->get().getAnimationDuration(AnimationType::Attacking);
 		}
 
-		if (animComp.hasAnimation(AnimationType::Charge)) {
-			attackDuration = animComp.getAnimationDuration(AnimationType::Charge);
-			if (animComp.hasAnimation(AnimationType::Fire)) {
-				attackDuration += animComp.getAnimationDuration(AnimationType::Fire);
+		if (animComp->get().hasAnimation(AnimationType::Charge)) {
+			attackDuration = animComp->get().getAnimationDuration(AnimationType::Charge);
+			if (animComp->get().hasAnimation(AnimationType::Fire)) {
+				attackDuration += animComp->get().getAnimationDuration(AnimationType::Fire);
 			}
-		} else if (animComp.hasAnimation(AnimationType::Fire)) {
-			attackDuration = animComp.getAnimationDuration(AnimationType::Fire);
+		} else if (animComp->get().hasAnimation(AnimationType::Fire)) {
+			attackDuration = animComp->get().getAnimationDuration(AnimationType::Fire);
 		}
-		if (animComp.hasAnimation(AnimationType::Hurting)) {
-			invulnerabilityTime = animComp.getAnimationDuration(AnimationType::Hurting);
+		if (animComp->get().hasAnimation(AnimationType::Hurting)) {
+			invulnerabilityTime = animComp->get().getAnimationDuration(AnimationType::Hurting);
 		}
 	}
 
@@ -287,28 +286,30 @@ GameEngine::ECS::Entity GameEngine::ECS::EnemyFactory::createEnemy(tson::Object 
 
 void GameEngine::ECS::EnemyFactory::ensureSafeSpawn(const GameEngine::ECS::Entity entity) const
 {
-	if (!registry.has<PositionComponent>(entity) || !registry.has<CollisionComponent>(entity)) {
+
+	auto position = registry.tryGet<PositionComponent>(entity);
+	auto collision = registry.tryGet<CollisionComponent>(entity);
+
+	if (!position || !collision) {
 		return;
 	}
 
-	auto &entityPos = registry.get<PositionComponent>(entity);
-	const auto &entityCollision = registry.get<CollisionComponent>(entity).collisionBox;
-	glm::vec2 scale = {1.0f, 1.0f};
-	if (registry.has<TransformComponent>(entity)) {
-		scale = registry.get<TransformComponent>(entity).scale;
-	}
+	const auto transform = registry.tryGet<TransformComponent>(entity);
+	const auto scale = transform ? transform->get().scale : glm::vec2{1.0f, 1.0f};
 
-	entityPos.position.x -= (entityCollision.x + (entityCollision.w / 2.0f)) * scale.x;
-	entityPos.position.y -= (entityCollision.y + (entityCollision.h / 2.0f)) * scale.y;
+	position->get().position.x -=
+	    (collision->get().collisionBox.x + (collision->get().collisionBox.w / 2.0f)) * scale.x;
+	position->get().position.y -=
+	    (collision->get().collisionBox.y + (collision->get().collisionBox.h / 2.0f)) * scale.y;
 
 	int maxAttempts = 100;
-	bool collision = true;
+	bool hasCollision = true;
 
-	while (collision && maxAttempts > 0) {
-		collision = false;
-		SDL_FRect enemyRect = {entityPos.position.x + entityCollision.x * scale.x,
-		                       entityPos.position.y + entityCollision.y * scale.y, entityCollision.w * scale.x,
-		                       entityCollision.h * scale.y};
+	while (hasCollision && maxAttempts > 0) {
+		hasCollision = false;
+		SDL_FRect enemyRect = {position->get().position.x + collision->get().collisionBox.x * scale.x,
+		                       position->get().position.y + collision->get().collisionBox.y * scale.y,
+		                       collision->get().collisionBox.w * scale.x, collision->get().collisionBox.h * scale.y};
 
 		for (auto staticColliders = registry.view<PositionComponent, CollisionComponent>()
 		                                .exclude<EnemyTag>()
@@ -320,8 +321,8 @@ void GameEngine::ECS::EnemyFactory::ensureSafeSpawn(const GameEngine::ECS::Entit
 			const auto &staticColliderCollisionBox =
 			    staticColliders.get<CollisionComponent>(staticCollider).collisionBox;
 			glm::vec2 staticColliderScale = {1.0f, 1.0f};
-			if (registry.has<TransformComponent>(staticCollider)) {
-				staticColliderScale = registry.get<TransformComponent>(staticCollider).scale;
+			if (const auto staticTransform = registry.tryGet<TransformComponent>(staticCollider)) {
+				staticColliderScale = staticTransform->get().scale;
 			}
 
 			SDL_FRect staticColliderRect = {
@@ -331,8 +332,8 @@ void GameEngine::ECS::EnemyFactory::ensureSafeSpawn(const GameEngine::ECS::Entit
 			    staticColliderCollisionBox.h * staticColliderScale.y};
 
 			if (SDL_HasRectIntersectionFloat(&enemyRect, &staticColliderRect)) {
-				collision = true;
-				entityPos.position.y -= 2.0f;
+				hasCollision = true;
+				position->get().position.y -= 2.0f;
 				break;
 			}
 		}

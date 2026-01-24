@@ -19,11 +19,11 @@
 #include "Engine/ECS/Systems/CollisionSystem.hpp"
 #include "Engine/ECS/Systems/Combat/AttackSystem.hpp"
 #include "Engine/ECS/View.hpp"
+
 #include "Engine/Utils/DetectionRangeUtils.hpp"
 #include "Engine/Utils/SpatialHash.hpp"
 
 namespace GameEngine::ECS::Systems::ChaseSystem {
-
 namespace {
 
 struct PlayerContext {
@@ -58,23 +58,21 @@ void resetChaseState(const EnemyContext &enemy)
 
 std::optional<PlayerContext> getPlayerContext(Registry &registry)
 {
-	auto playerView =
-	    registry.view<PlayerTag, PositionComponent, HurtBoxComponent, TransformComponent, GroundedComponent>();
-	for (auto view =
-	         registry.view<PlayerTag, PositionComponent, HurtBoxComponent, TransformComponent, GroundedComponent>();
+	for (auto view = registry.view<PlayerTag, PositionComponent, HurtBoxComponent, TransformComponent,
+	                               GroundedComponent, StateComponent>();
 	     const auto entity : view) {
-
-		const auto &pos = registry.get<PositionComponent>(entity).position;
-		const auto &hurtBox = registry.get<HurtBoxComponent>(entity).hurtBox;
-		const auto &transform = registry.get<TransformComponent>(entity);
-		const auto &ground = registry.get<GroundedComponent>(entity);
-		const auto &state = registry.get<StateComponent>(entity);
+		const auto &pos = view.get<PositionComponent>(entity).position;
+		const auto &hurtBox = view.get<HurtBoxComponent>(entity).hurtBox;
+		const auto &transform = view.get<TransformComponent>(entity);
+		const auto &ground = view.get<GroundedComponent>(entity);
+		const auto &state = view.get<StateComponent>(entity);
 
 		return PlayerContext{Utils::DetectionRangeUtils::calculateCenter(pos, hurtBox, transform.scale), hurtBox,
 		                     transform.scale, ground.grounded, &state};
 	}
 	return std::nullopt;
 }
+} // namespace
 
 bool checkLineOfSight(const EnemyContext &enemy, const PlayerContext &player, const Utils::SpatialHash &grid,
                       RangedAttackComponent &ranged, const glm::vec2 &projectileSize, const glm::vec2 &hitboxOffset)
@@ -104,10 +102,8 @@ bool checkLineOfSight(const EnemyContext &enemy, const PlayerContext &player, co
 }
 
 void handleRangeAttack(const EnemyContext &enemy, const PlayerContext &player, const Utils::SpatialHash &grid,
-                       Registry &registry)
+                       Registry &registry, RangedAttackComponent &ranged)
 {
-
-	auto &ranged = registry.get<RangedAttackComponent>(enemy.entity);
 
 	if (player.state->state == State::Dead) {
 		resetChaseState(enemy);
@@ -138,10 +134,9 @@ void handleRangeAttack(const EnemyContext &enemy, const PlayerContext &player, c
 	if (progress <= enemy.attack->windUpLimit) {
 		glm::vec2 projectileSize = {0.f, 0.f};
 		glm::vec2 hitboxOffset = {0.0f, 0.0f};
-		if (registry.has<ProjectileComponent>(enemy.entity)) {
-			const auto &pc = registry.get<ProjectileComponent>(enemy.entity);
-			projectileSize = pc.projectileSize;
-			hitboxOffset = pc.hitboxOffset;
+		if (const auto pc = registry.tryGet<ProjectileComponent>(enemy.entity)) {
+			projectileSize = pc->get().projectileSize;
+			hitboxOffset = pc->get().hitboxOffset;
 		}
 
 		if (!checkLineOfSight(enemy, player, grid, ranged, projectileSize, hitboxOffset)) {
@@ -198,8 +193,6 @@ void handleMeleeAttack(const EnemyContext &enemy, const PlayerContext &player)
 	}
 }
 
-} // namespace
-
 void update(Registry &registry, const float deltaTime)
 {
 	PROFILE_SCOPE("ChaseSystem");
@@ -218,22 +211,21 @@ void update(Registry &registry, const float deltaTime)
 	                               GroundedComponent, AttackComponent, RenderComponent>();
 
 	for (const auto entity : enemyView) {
-		const auto &pos = registry.get<PositionComponent>(entity);
-		const auto &enemyHurtBox = registry.get<HurtBoxComponent>(entity).hurtBox;
-		auto &chase = registry.get<ChaseComponent>(entity);
+		const auto &pos = enemyView.get<PositionComponent>(entity);
+		const auto &enemyHurtBox = enemyView.get<HurtBoxComponent>(entity).hurtBox;
+		auto &chase = enemyView.get<ChaseComponent>(entity);
 
-		glm::vec2 enemyScale = {1.0f, 1.0f};
-		if (registry.has<TransformComponent>(entity)) {
-			enemyScale = registry.get<TransformComponent>(entity).scale;
-		}
+		auto transform = registry.tryGet<TransformComponent>(entity);
+
+		glm::vec2 enemyScale = transform ? transform->get().scale : glm::vec2{1.0f, 1.0f};
 
 		EnemyContext enemyCtx{entity,
-		                      &registry.get<InputComponent>(entity),
-		                      &registry.get<ChaseComponent>(entity),
-		                      &registry.get<MovementComponent>(entity),
-		                      &registry.get<RenderComponent>(entity),
-		                      &registry.get<AttackComponent>(entity),
-		                      &registry.get<PatrolComponent>(entity),
+		                      &enemyView.get<InputComponent>(entity),
+		                      &enemyView.get<ChaseComponent>(entity),
+		                      &enemyView.get<MovementComponent>(entity),
+		                      &enemyView.get<RenderComponent>(entity),
+		                      &enemyView.get<AttackComponent>(entity),
+		                      &enemyView.get<PatrolComponent>(entity),
 		                      enemyHurtBox,
 		                      Utils::DetectionRangeUtils::calculateCenter(pos.position, enemyHurtBox, enemyScale),
 		                      enemyScale,
@@ -241,12 +233,11 @@ void update(Registry &registry, const float deltaTime)
 
 		chase.reactionDelay.step(std::chrono::duration<float>(deltaTime), false);
 
-		if (registry.has<RangedAttackComponent>(entity)) {
-			handleRangeAttack(enemyCtx, playerCtx, staticColliderGrid, registry);
+		if (auto ranged = registry.tryGet<RangedAttackComponent>(entity)) {
+			handleRangeAttack(enemyCtx, playerCtx, staticColliderGrid, registry, ranged->get());
 		} else {
 			handleMeleeAttack(enemyCtx, playerCtx);
 		}
 	}
 }
-
 } // namespace GameEngine::ECS::Systems::ChaseSystem

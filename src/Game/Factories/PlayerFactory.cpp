@@ -20,6 +20,7 @@
 #include "Engine/ECS/Components/Render/CenterCameraComponent.hpp"
 #include "Engine/ECS/Components/Render/RenderComponent.hpp"
 #include "Engine/ECS/Components/Tags/PlayerTag.hpp"
+#include "PlayerFactory.hpp"
 
 PlayerFactory::PlayerFactory(GameEngine::ECS::Registry &registry, TextureManager &tex_mgr,
                              AnimationFactory &animation_factory)
@@ -55,11 +56,9 @@ GameEngine::ECS::Entity PlayerFactory::createPlayer(tson::Object &player, const 
 
 		animationFactory.loadAnimationsFromTileset(player, e);
 		std::chrono::duration<float> attackDuration = 1s;
-		if (registry.has<AnimationComponent>(e)) {
-			if (const auto &animComp = registry.get<AnimationComponent>(e);
-			    animComp.hasAnimation(AnimationType::Attacking)) {
-				attackDuration = animComp.getAnimationDuration(AnimationType::Attacking);
-				SDL_Log("Attack duration: %f", attackDuration.count());
+		if (const auto animComp = registry.tryGet<AnimationComponent>(e)) {
+			if (animComp->get().hasAnimation(AnimationType::Attacking)) {
+				attackDuration = animComp->get().getAnimationDuration(AnimationType::Attacking);
 			}
 		}
 
@@ -69,7 +68,7 @@ GameEngine::ECS::Entity PlayerFactory::createPlayer(tson::Object &player, const 
 		registry.registerComponent(e, InputComponent{});
 		registry.registerComponent(e, MovementComponent{});
 
-		registry.registerComponent(e, JumpComponent{.maxJumps = 1, .coyoteTimer = Timer{0.08s}});
+		registry.registerComponent(e, JumpComponent{.maxJumps = 5, .coyoteTimer = Timer{0.08s}});
 		registry.registerComponent(e, BlinkComponent{.color = {50, 50, 50, 150}});
 
 		registry.registerComponent(e, InteractionComponent{19, 25, 21, 32});

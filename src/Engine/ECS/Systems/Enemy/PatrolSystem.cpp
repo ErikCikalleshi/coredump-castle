@@ -16,30 +16,27 @@ void update(Registry &registry)
 	for (auto view = registry.view<PositionComponent, PatrolComponent, InputComponent, CollisionComponent>();
 	     const auto entity : view) {
 
-		if (registry.has<AttackComponent>(entity)) {
-			auto &attack = registry.get<AttackComponent>(entity);
-			if (attack.attackTimer.isRunning() && !attack.attackTimer.isTimeout()) {
-				auto &input = registry.get<InputComponent>(entity);
+		if (const auto attack = registry.tryGet<AttackComponent>(entity)) {
+			if (attack->get().attackTimer.isRunning() && !attack->get().attackTimer.isTimeout()) {
+				auto &input = view.get<InputComponent>(entity);
 				input.horizontalDirection = 0.0f;
 				continue;
 			}
 		}
-		const auto &[position, previousPosition] = registry.get<PositionComponent>(entity);
-		const auto &[minBounds, maxBounds] = registry.get<PatrolComponent>(entity);
-		auto &input = registry.get<InputComponent>(entity);
-		const auto &[collisionBox] = registry.get<CollisionComponent>(entity);
+		const auto &[position, previousPosition] = view.get<PositionComponent>(entity);
+		const auto &[minBounds, maxBounds] = view.get<PatrolComponent>(entity);
+		auto &input = view.get<InputComponent>(entity);
+		const auto &[collisionBox] = view.get<CollisionComponent>(entity);
 
-		auto scale = glm::vec2(1.0f, 1.0f);
-		if (registry.has<TransformComponent>(entity)) {
-			scale = registry.get<TransformComponent>(entity).scale;
-		}
+		const auto transform = registry.tryGet<TransformComponent>(entity);
+		const glm::vec2 scale = transform ? transform->get().scale : glm::vec2{1.0f, 1.0f};
 
 		const float enemyRight = position.x + (collisionBox.x + collisionBox.w) * scale.x;
 		const float enemyLeft = position.x + collisionBox.x * scale.x;
 
 		bool isChasing = false;
-		if (registry.has<ChaseComponent>(entity)) {
-			if (registry.get<ChaseComponent>(entity).lastKnownPlayerX.has_value()) {
+		if (const auto chase = registry.tryGet<ChaseComponent>(entity)) {
+			if (chase->get().lastKnownPlayerX.has_value()) {
 				isChasing = true;
 			}
 		}
