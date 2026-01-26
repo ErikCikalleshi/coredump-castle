@@ -48,7 +48,7 @@ void RenderSystem::update(Registry &registry, float alpha)
 		// Backgrounds
 
 		for (const auto entity : bgView) {
-			const auto &[layer, flipX] = bgView.get<RenderComponent>(entity);
+			const auto &render = bgView.get<RenderComponent>(entity);
 			const auto &[position, previousPosition] = bgView.get<PositionComponent>(entity);
 			const auto &bg = bgView.get<BackgroundComponent>(entity);
 
@@ -60,13 +60,13 @@ void RenderSystem::update(Registry &registry, float alpha)
 				    SDL_FRect{.x = position.x, .y = bg.yOffset + position.y, .h = static_cast<float>(bg.texture->h)};
 			}
 
-			renderItems.emplace_back(RenderItem{.layer = layer,
+			renderItems.emplace_back(RenderItem{.layer = render.layer,
 			                                    .texture = bg.texture,
 			                                    .src = srcOpt,
 			                                    .dst = dstOpt,
 			                                    .parallax = bg.repeatX,
 			                                    .scrollFactor = bg.scrollingSpeed,
-			                                    .flipX = flipX});
+			                                    .flipX = render.flipX});
 		}
 
 		const SDL_FRect &viewport = renderer.getViewport();
@@ -74,7 +74,7 @@ void RenderSystem::update(Registry &registry, float alpha)
 		for (const auto entity : view) {
 			const auto &[position, previousPosition] = view.get<PositionComponent>(entity);
 			const auto &[texture, TileSize, TileMapPosition, spriteColorMod] = view.get<SpriteComponent>(entity);
-			const auto &[layer, flipX] = view.get<RenderComponent>(entity);
+			const auto &render = view.get<RenderComponent>(entity);
 
 			const auto transform = registry.tryGet<TransformComponent>(entity);
 			const glm::vec2 scale = transform ? transform->get().scale : glm::vec2{1.0f, 1.0f};
@@ -97,12 +97,12 @@ void RenderSystem::update(Registry &registry, float alpha)
 			              .w = tile.TileSize,
 			              .h = tile.TileSize};*/
 			if (SDL_HasRectIntersectionFloat(&dst, &viewport)) {
-				renderItems.push_back(RenderItem{.layer = layer,
+				renderItems.push_back(RenderItem{.layer = render.layer,
 				                                 .texture = texture,
 				                                 .src = src,
 				                                 .dst = dst,
 				                                 .parallax = false,
-				                                 .flipX = flipX,
+				                                 .flipX = render.flipX,
 				                                 .angle = rotation,
 				                                 .colorMod = spriteColorMod});
 			}
@@ -213,8 +213,8 @@ void RenderSystem::centerCamera(Registry &registry) const
 			                        level.levelSize);
 
 			if (const auto render = registry.tryGet<RenderComponent>(levelEntity)) {
-				auto &[layer, flipX] = render->get();
-				layer = level.playerLayer;
+				auto &renderComp = render->get();
+				renderComp.layer = level.playerLayer;
 			}
 
 		} else if (levelView.size() > 1) {
