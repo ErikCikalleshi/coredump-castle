@@ -9,6 +9,8 @@
 #include "Engine/ECS/Systems/Combat/HitDetectionSystem.hpp"
 #include "Engine/ECS/Systems/Combat/PoiseSystem.hpp"
 #include "Engine/ECS/Systems/EffectSystem.hpp"
+#include "Engine/ECS/Systems/Enemy/AiAttackSystem.hpp"
+#include "Engine/ECS/Systems/Enemy/AiDecisionSystem.hpp"
 #include "Engine/ECS/Systems/Enemy/ChaseSystem.hpp"
 #include "Engine/ECS/Systems/Enemy/PatrolSystem.hpp"
 #include "Engine/ECS/Systems/Enemy/ProjectileSystem.hpp"
@@ -34,13 +36,16 @@ void PlayState::init(GameEngine &game)
 {
 	const std::filesystem::path projectPath = "assets/tiled/CoredumpCastle.tiled-project";
 	auto factory = WorldFactory(game.getRegistry(), projectPath, game.getTextureManager(), game.getInputManager(),
-	                            game.getAudioManager());
+	                            game.getAudioManager(), spawners);
 
 	const std::filesystem::path worldPath = "assets/tiled/coredumpCastle.world";
 	factory.createWorld(worldPath);
 	game.getSaveSystem().loadSavedGame(game.getRegistry());
 
 	game.getAudioManager().playMusic("assets/audio/music/main_theme.ogg", 2500);
+	for (auto &spawner : spawners) {
+		spawner.spawn();
+	}
 }
 
 void PlayState::cleanup() {}
@@ -65,10 +70,21 @@ void PlayState::update(GameEngine &game, const float deltaTime)
 	}
 	mapActivationSystem.update(game.getRegistry());
 	inputSystem.update(game.getRegistry());
+	ECS::Systems::AiDecisionSystem::update(game.getRegistry());
 
-	ECS::Systems::ChaseSystem::update(game.getRegistry(), deltaTime);
-	ECS::Systems::ProjectileSystem::update(game.getRegistry(), deltaTime, game.getTextureManager());
+	projectileSystem.update(game.getRegistry(), deltaTime);
 	ECS::Systems::JumpSystem::update(game.getRegistry(), deltaTime);
+
+	accumulator += deltaTime;
+	while (accumulator >= stepSize) {
+		accumulator -= stepSize;
+		ECS::Systems::ChaseSystem::update(game.getRegistry(), deltaTime);
+		ECS::Systems::PatrolSystem::update(game.getRegistry());
+		ECS::Systems::MovementSystem::update(game.getRegistry(), stepSize);
+		ECS::Systems::PhysicsSystem::update(game.getRegistry(), stepSize);
+	}
+
+	ECS::Systems::AiAttackSystem::update(game.getRegistry(), deltaTime);
 	ECS::Systems::AttackSystem::update(game.getRegistry(), deltaTime, [&](const ECS::Entity e) {
 		if (game.getRegistry().has<PlayerTag>(e)) {
 			effectFactory.createEffectOnEntity(e, EffectType::PlayerSwoosh);
@@ -78,14 +94,6 @@ void PlayState::update(GameEngine &game, const float deltaTime)
 	                                         [&](const ECS::Entity attacker, const ECS::Entity victim) {
 		                                         effectFactory.createIsHitEffect(attacker, victim);
 	                                         });
-
-	accumulator += deltaTime;
-	while (accumulator >= stepSize) {
-		accumulator -= stepSize;
-		ECS::Systems::PatrolSystem::update(game.getRegistry());
-		ECS::Systems::MovementSystem::update(game.getRegistry(), stepSize);
-		ECS::Systems::PhysicsSystem::update(game.getRegistry(), stepSize);
-	}
 
 	ECS::Systems::SpikeSystem::update(game.getRegistry());
 	ECS::Systems::HealthSystem::update(game.getRegistry(), deltaTime);
@@ -100,7 +108,7 @@ void PlayState::update(GameEngine &game, const float deltaTime)
 
 	ECS::Systems::DeathSystem::update(game.getRegistry(), deltaTime);
 
-	ECS::Systems::InteractionSystem::update(game, game.getRegistry());
+	ECS::Systems::InteractionSystem::update(game, game.getRegistry(), spawners);
 	ECS::Systems::TooltipSystem::update(game.getRegistry());
 	ECS::Systems::RespawnSystem::update(game.getRegistry(), game, deltaTime);
 	ECS::Systems::MapToggleSystem::update(game.getRegistry(), game);
