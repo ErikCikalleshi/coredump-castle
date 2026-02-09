@@ -206,7 +206,13 @@ EnemySpawner GameEngine::ECS::EnemyFactory::createEnemy(tson::Object &enemyObj, 
 	}
 
 	const tson::Vector2 pos = enemyObj.getPosition();
-	const glm::vec2 spawn = glm::vec2(pos.x, pos.y) + levelPos;
+	glm::vec2 spawn = glm::vec2(pos.x, pos.y) + levelPos;
+
+	if (collisionStr) {
+		auto collisionBox = parseCollisionBox(collisionStr.value());
+		spawn.x -= collisionBox.w / 2;
+		spawn.y -= collisionBox.h;
+	}
 
 	spawner.addBlueprint(PositionComponent{.position = spawn});
 	spawner.addBlueprint(VelocityComponent{.velocity = {0.0f, 0.0f}});
