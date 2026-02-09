@@ -19,7 +19,6 @@
 #include "Engine/ECS/Components/Gameplay/Enemy/PatrolComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/Enemy/VisionComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/InputComponent.hpp"
-#include "Engine/ECS/Components/Gameplay/JumpComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/MovementComponent.hpp"
 #include "Engine/ECS/Components/Physics/AccelerationComponent.hpp"
 #include "Engine/ECS/Components/Physics/CollisionComponent.hpp"

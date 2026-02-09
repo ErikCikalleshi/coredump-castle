@@ -56,7 +56,10 @@ void updateDamageState(Registry &registry, Entity entity, AttackComponent &attac
 		const auto currentAnim = anim->get().getAnimation();
 		if (anim->get().usesDamageFrames(currentAnim)) {
 			attack.isDamageActive = anim->get().isDamageActive(currentAnim);
+			SDL_Log("Damage active: %d", attack.isDamageActive);
 			usingFrameData = true;
+		} else if (anim->get().getAnimation() != AnimationType::Attacking) {
+			return;
 		}
 	}
 
@@ -83,6 +86,7 @@ void update(Registry &registry, const float deltaTime, const AttackCallback &onA
 
 		if (input.attackPressed && !isAttacking(attack) && isCoolDown(attack)) {
 			startAttack(attack, deltaTime);
+			SDL_Log("starting attack with damage active: %d", attack.isDamageActive);
 			onAttack(entity);
 		} else if (isAttacking(attack)) {
 			processAttack(attack, deltaTime);
