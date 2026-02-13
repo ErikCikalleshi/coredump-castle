@@ -1,5 +1,4 @@
 #include "GameEngine.hpp"
-#include "../Game/States/PlayState.hpp"
 #include "Debug/DebugSystem.hpp"
 #include "FileIO/FileSaveStorage.hpp"
 #include "Game/States/MainMenuState.hpp"
@@ -14,7 +13,7 @@ namespace GameEngine {
 
 GameEngine::GameEngine(const std::string &title, const Resolution resolution)
     : renderer(title, resolution), textureManager(renderer), fontManager(renderer),
-      saveSystem(std::make_unique<ECS::FileSaveStorage>())
+      saveSystem(std::make_unique<FileIO::FileSaveStorage>())
 {
 	DebugSystem::instance().setRegistry(registry);
 };
@@ -26,11 +25,9 @@ GameEngine::~GameEngine()
 
 bool GameEngine::init()
 {
-	std::unique_ptr<Ui::UIContext> context = CoredumpContext::getContext(*this);
+	context = CoredumpContext::getContext(*this);
 
-	guiManager = std::make_unique<Ui::GuiManager>(std::move(context));
-	states.emplace_back(
-	    std::make_unique<MainMenuState>(getInputManager(), getTextureManager(), getGuiManager(), getRenderer()));
+	states.emplace_back(std::make_unique<MainMenuState>(getInputManager(), getTextureManager(), getRenderer()));
 	running = true;
 
 	states.back()->init(*this);

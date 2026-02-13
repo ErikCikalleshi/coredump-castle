@@ -7,7 +7,6 @@
 #include "Engine/ECS/View.hpp"
 #include "Engine/GameEngine.hpp"
 #include "Engine/Graphics/Gui/LayoutEngine.hpp"
-#include "Engine/Graphics/Gui/Layouts/AnchorLayout.hpp"
 
 GameEngine::ECS::Systems::UiRenderSystem::UiRenderSystem(Renderer &renderer) : renderer(renderer)
 {
@@ -36,8 +35,8 @@ void GameEngine::ECS::Systems::UiRenderSystem::initTextDisplayComp(const std::st
                                                                    TextDisplayComponent &textDisplay,
                                                                    const GameEngine &game) const
 {
-	textDisplay.textObject = renderer.createText(game.getGuiManager().getContext().textFont, "");
-	const auto textSize = Renderer::getStringSizeWrapped(game.getGuiManager().getContext().textFont, text);
-	textDisplay.bounds = Ui::LayoutEngine::positionAnchored(resolutionSize, textSize,
-	                                                        Ui::AnchorParams{{0.5f, 1.f}, {0.5f, 1.f}, {0.f, -10.f}});
+	textDisplay.textObject = renderer.createText(game.getUiContext().textFont, "");
+	const auto textSize = Renderer::getStringSizeWrapped(game.getUiContext().textFont, text);
+	textDisplay.bounds = Ui::LayoutEngine::positionAnchored(
+	    resolutionSize, textSize, Ui::LayoutEngine::AnchorParams{{0.5f, 1.f}, {0.5f, 1.f}, {0.f, -10.f}});
 }

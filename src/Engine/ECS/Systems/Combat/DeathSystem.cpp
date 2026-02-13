@@ -18,6 +18,7 @@
 #include "HealthSystem.hpp"
 #include "Engine/ECS/Components/Tags/PendingReviveTag.hpp"
 #include "Game/Spawners/EnemySpawner.hpp"
+#include "Game/States/GameFinishedState.hpp"
 #include "Game/States/GameOverState.hpp"
 
 #include <SDL3/SDL_log.h>
@@ -80,8 +81,14 @@ void GameEngine::ECS::Systems::DeathSystem::update(Registry &registry, GameEngin
 
 			if (registry.has<PlayerTag>(entity)) {
 				registry.registerComponent(entity, PendingReviveTag{});
-				game.pushState(std::make_unique<GameOverState>(game.getInputManager(), game.getTextureManager(), game.getGuiManager(), game.getRenderer(), spawners));
+				game.pushState(std::make_unique<GameOverState>(game.getInputManager(), game.getTextureManager(), game.getRenderer(), spawners));
 			} else {
+				if (registry.has<BossComponent>(entity)) {
+					auto &bossComp = registry.get<BossComponent>(entity);
+					if (bossComp.unlockAbility == AbilityType::None) {
+						game.pushState(std::make_unique<GameFinishedState>(game.getInputManager(), game.getRenderer()));
+					}
+				}
 				registry.deleteEntity(entity);
 			}
 		}

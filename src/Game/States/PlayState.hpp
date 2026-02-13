@@ -5,6 +5,7 @@
 #include "Engine/ECS/Systems/RenderSystem.hpp"
 #include "Engine/ECS/Systems/Ui/UiRenderSystem.hpp"
 #include "Engine/GameState.hpp"
+#include "Engine/Graphics/Gui/Base/Widget.hpp"
 #include "Game/Factories/EffectFactory.hpp"
 #include "Game/Spawners/EnemySpawner.hpp"
 #include <vector>
@@ -13,9 +14,9 @@ namespace GameEngine {
 class PlayState final : public GameState {
 	// Inherited via GameState
   public:
-	PlayState(InputManager &input, TextureManager &textureManager, Ui::GuiManager &guiManager, Renderer &renderer,
+	PlayState(InputManager &input, TextureManager &textureManager, Renderer &renderer,
 	          EffectFactory &effectFactory, ProjectileFactory &projectileFactory)
-	    : inputManager(input), textureManager(textureManager), guiManager(guiManager), renderer(renderer),
+	    : inputManager(input), textureManager(textureManager), renderer(renderer),
 	      effectFactory(effectFactory), projectileSystem(projectileFactory)
 	{
 	}
@@ -30,7 +31,6 @@ class PlayState final : public GameState {
   private:
 	InputManager &inputManager;
 	TextureManager &textureManager;
-	Ui::GuiManager &guiManager;
 	Renderer &renderer;
 	ECS::Systems::RenderSystem renderSystem{renderer};
 	ECS::Systems::UiRenderSystem uiRenderSystem{renderer};

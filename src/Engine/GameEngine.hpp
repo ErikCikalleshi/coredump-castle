@@ -1,11 +1,11 @@
 #pragma once
 #include "Audio/AudioManager.hpp"
 #include "ECS/Registry.hpp"
-#include "ECS/Systems/SaveSystem.hpp"
+#include "FileIO/SaveManager.hpp"
 #include "Game/Factories/EffectFactory.hpp"
 #include "Game/Factories/ProjectileFactory.hpp"
 #include "Graphics/FontManager.hpp"
-#include "Graphics/Gui/GuiManager.hpp"
+#include "Graphics/Gui/Core/UiContext.hpp"
 #include "Graphics/Renderer.hpp"
 #include "Graphics/TextureManager.hpp"
 #include "Input/InputManager.hpp"
@@ -60,9 +60,9 @@ class GameEngine {
 	InputManager &getInputManager() { return inputManager; }
 	TextureManager &getTextureManager() { return textureManager; }
 	FontManager &getFontManager() { return fontManager; }
-	Ui::GuiManager &getGuiManager() const { return *guiManager; }
+	Ui::UIContext &getUiContext() const { return *context; }
 	EffectFactory &getEffectFactory() { return effectFactory; };
-	ECS::Systems::SaveSystem &getSaveSystem() { return saveSystem; }
+	FileIO::SaveManager &getSaveSystem() { return saveSystem; }
 	AudioManager &getAudioManager() { return audioManager; }
 	ProjectileFactory &getProjectileFactory() { return projectileFactory; }
 
@@ -75,10 +75,10 @@ class GameEngine {
 	InputManager inputManager;
 	TextureManager textureManager;
 	FontManager fontManager;
-	std::unique_ptr<Ui::GuiManager> guiManager;
-	ECS::Systems::SaveSystem saveSystem;
+	std::unique_ptr<Ui::UIContext> context;
+	FileIO::SaveManager saveSystem;
 	struct PendingAction {
-		enum class Type { Push, Pop, Change, Reset};
+		enum class Type { Push, Pop, Change, Reset };
 		Type type;
 		std::optional<std::unique_ptr<GameState>> state;
 	};

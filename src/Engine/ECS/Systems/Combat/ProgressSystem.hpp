@@ -3,6 +3,7 @@
 #include "Engine/ECS/Components/Core/StateComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/BossComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/Combat/HealthComponent.hpp"
+#include "Engine/ECS/Components/Gameplay/JumpComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/InteractionComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/JumpComponent.hpp"
 #include "Engine/ECS/Components/Gameplay/ProgressComponent.hpp"

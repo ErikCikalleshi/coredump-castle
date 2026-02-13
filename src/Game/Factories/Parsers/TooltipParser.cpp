@@ -43,33 +43,33 @@ std::string TooltipParser::getTooltipText(const std::string &name) const
 		       "leaving his magic unsafe and shattering the castle's core.\n"
 		       "Fight your way through the castle,\n"
 		       "confront the Wizard, and restore the core!\n\n"
-		       "Press "
-		       + inputManager.getHumanReadableKey(Key::Left) + " and " + inputManager.getHumanReadableKey(Key::Right)
-		       + " to move.";
+		       "Press ["
+		       + inputManager.getHumanReadableKey(Key::Left) + "] and [" + inputManager.getHumanReadableKey(Key::Right)
+		       + "] to move.";
 	}
 
 	if (name == "jump") {
-		return "Press " + inputManager.getHumanReadableKey(Key::Up) + " to jump.";
+		return "Press [" + inputManager.getHumanReadableKey(Key::Up) + "] to jump.";
 	}
 
 	if (name == "combat") {
-		return "Press " + inputManager.getHumanReadableKey(Key::Attack) + " to attack.";
+		return "Press [" + inputManager.getHumanReadableKey(Key::Attack) + "] to attack.";
 	}
 
 	if (name == "map") {
-		return "Press " + inputManager.getHumanReadableKey(Key::ToggleMap)
-		       + " to toggle the map on and off.\n"
+		return "Press [" + inputManager.getHumanReadableKey(Key::ToggleMap)
+		       + "] to toggle the map on and off.\n"
 		         "Use the the Mousewheel to zoom in and out.";
 	}
 
 	if (name == "pause") {
-		return "Press " + inputManager.getHumanReadableKey(Key::Escape) + " to toggle the pause menu on and off.";
+		return "Press [" + inputManager.getHumanReadableKey(Key::Escape) + "] to toggle the pause menu on and off.";
 	}
 
 	if (name == "doublejump") {
 		return "Double jump unlocked.\n"
-		       "Press "
-		       + inputManager.getHumanReadableKey(Key::Up) + " while in the air, to extend your jump.\n";
+		       "Press ["
+		       + inputManager.getHumanReadableKey(Key::Up) + "] while in the air, to extend your jump.\n";
 	}
 
 	return "";
