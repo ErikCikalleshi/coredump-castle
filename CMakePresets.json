@@ -36,6 +36,16 @@
 				"CMAKE_EXPORT_COMPILE_COMMANDS": "Yes",
 				"USE_TRACY": "ON"
 			}
+		},
+		{
+			"name": "web",
+			"displayName": "WebAssembly (Emscripten)",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"VCPKG_TARGET_TRIPLET": "wasm32-emscripten",
+				"VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+			}
 		}
 	],
 	"buildPresets": [
@@ -59,6 +69,12 @@
 			"displayName": "Build (Optimized Debug)",
 			"description": "Optimized build with debug symbols and Tracy profiling",
 			"configuration": "RelWithDebInfo"
+		},
+		{
+			"name": "web",
+			"configurePreset": "web",
+			"displayName": "Build (WebAssembly)",
+			"configuration": "Release"
 		}
 	],
 	"testPresets": [

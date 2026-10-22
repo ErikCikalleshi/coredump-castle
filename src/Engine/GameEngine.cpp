@@ -1,6 +1,7 @@
 #include "GameEngine.hpp"
 #include "Debug/DebugSystem.hpp"
 #include "FileIO/FileSaveStorage.hpp"
+#include "FileIO/WebSaveStorage.hpp"
 #include "Game/States/MainMenuState.hpp"
 #include "Game/States/MapMenuState.hpp"
 #include "GameState.hpp"
@@ -11,9 +12,19 @@
 
 namespace GameEngine {
 
+namespace {
+std::unique_ptr<FileIO::ISaveStorage> createSaveStorage()
+{
+#ifdef __EMSCRIPTEN__
+	return std::make_unique<FileIO::WebSaveStorage>();
+#else
+	return std::make_unique<FileIO::FileSaveStorage>();
+#endif
+}
+} // namespace
+
 GameEngine::GameEngine(const std::string &title, const Resolution resolution)
-    : renderer(title, resolution), textureManager(renderer), fontManager(renderer),
-      saveSystem(std::make_unique<FileIO::FileSaveStorage>())
+    : renderer(title, resolution), textureManager(renderer), fontManager(renderer), saveSystem(createSaveStorage())
 {
 	DebugSystem::instance().setRegistry(registry);
 };

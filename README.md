@@ -85,3 +85,20 @@ cmake --build --preset=release
 * The project prioritizes clarity and learning over maximum performance.
 * External libraries are kept to a minimum by design.
 * Code quality is enforced via automated formatting and static analysis.
+---
+
+## Web Build (WebAssembly)
+
+The game can be compiled to WebAssembly with [Emscripten](https://emscripten.org) and played in a browser.
+
+```bash
+# one-time: install and activate emsdk, then
+source /path/to/emsdk/emsdk_env.sh
+cmake --preset web
+cmake --build --preset web
+# serve the output (index.html, .js, .wasm, .data) from out/build/web
+python3 -m http.server -d out/build/web 8000
+```
+
+Saves are stored in the browser's `localStorage` (`WebSaveStorage`). Pushes to `main` are deployed to GitHub Pages by
+`.github/workflows/deploy-web.yml` (enable Pages with source "GitHub Actions" in the repository settings).
