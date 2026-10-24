@@ -41,6 +41,16 @@
 			"name": "web",
 			"displayName": "WebAssembly (Emscripten)",
 			"inherits": "base",
+			"environment": {
+				"CPATH": "",
+				"CPPFLAGS": "",
+				"LDFLAGS": "",
+				"CC": "",
+				"CXX": "",
+				"CFLAGS": "",
+				"CXXFLAGS": "",
+				"SDKROOT": ""
+			},
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release",
 				"VCPKG_TARGET_TRIPLET": "wasm32-emscripten",
@@ -74,6 +84,16 @@
 			"name": "web",
 			"configurePreset": "web",
 			"displayName": "Build (WebAssembly)",
+			"environment": {
+				"CPATH": "",
+				"CPPFLAGS": "",
+				"LDFLAGS": "",
+				"CC": "",
+				"CXX": "",
+				"CFLAGS": "",
+				"CXXFLAGS": "",
+				"SDKROOT": ""
+			},
 			"configuration": "Release"
 		}
 	],
