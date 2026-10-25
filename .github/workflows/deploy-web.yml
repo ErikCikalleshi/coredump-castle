@@ -27,9 +27,6 @@ jobs:
       - name: Set up Emscripten
         uses: mymindstorm/setup-emsdk@v14
 
-      - name: Export EMSDK path
-        run: echo "EMSDK=$(dirname "$(dirname "$(which emcc)")")" >> "$GITHUB_ENV"
-
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@5e0cab206a5ea620130caf672fce3e4a6b5666a1 # v11.5
         env:
