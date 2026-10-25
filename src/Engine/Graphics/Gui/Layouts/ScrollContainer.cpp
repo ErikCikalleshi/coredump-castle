@@ -15,7 +15,7 @@ bool ScrollContainer::handleEvent(const glm::vec2 localMousePos, const SDL_Event
 
 	if (event.type == SDL_EVENT_MOUSE_WHEEL && isInside) {
 		float maxChildY = 0.0f;
-		for (const auto &child : children) {
+		for (const auto &child : getChildren()) {
 			maxChildY = std::max(maxChildY, child->getRelativePosition().y + child->getSize().y);
 		}
 
@@ -33,7 +33,7 @@ bool ScrollContainer::handleEvent(const glm::vec2 localMousePos, const SDL_Event
 	const auto childMousePos =
 	    isInside ? (localMousePos - getRelativePosition() + glm::vec2{0.0f, scrollY}) : glm::vec2{-99999.0f, -99999.0f};
 
-	for (const auto &child : std::ranges::reverse_view(children)) {
+	for (const auto &child : std::ranges::reverse_view(getChildren())) {
 		if (child->handleEvent(childMousePos, event))
 			return true;
 	}
@@ -46,7 +46,7 @@ void ScrollContainer::draw(const UIContext &context, const glm::vec2 parentOffse
 	const SDL_Rect clipRect = GameEngine::Utils::RenderUtils::rectFromFRect(fRect);
 	GameEngine::Utils::RenderUtils::withClipRect(context.renderer->getNativeRenderer(), clipRect, [&] {
 		const auto selfOffset = parentOffset + getRelativePosition() - glm::vec2{0.0f, scrollY};
-		for (const auto &child : children) {
+		for (const auto &child : getChildren()) {
 			child->draw(context, selfOffset);
 		}
 	});

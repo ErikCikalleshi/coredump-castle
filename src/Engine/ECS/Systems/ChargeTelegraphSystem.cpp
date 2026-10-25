@@ -43,14 +43,11 @@ void GameEngine::ECS::Systems::ChargeTelegraphSystem::update(Registry &registry,
 		const float intensity = (std::sin(pulsePhase * 2.0f * 3.14159f) + 1.0f) / 2.0f;
 
 		if (telegraph.useOutlineGlow) {
-			auto outlineGlowOpt = registry.tryGet<OutlineGlowComponent>(entity);
-
-			if (!outlineGlowOpt) {
+			if (!registry.tryGet<OutlineGlowComponent>(entity)) {
 				registry.registerComponent<OutlineGlowComponent>(entity, OutlineGlowComponent{});
-				outlineGlowOpt = registry.tryGet<OutlineGlowComponent>(entity);
 			}
 
-			auto &outlineGlow = outlineGlowOpt->get();
+			auto &outlineGlow = registry.get<OutlineGlowComponent>(entity);
 			outlineGlow.active = true;
 			outlineGlow.outlineColor = telegraph.glowColor;
 			outlineGlow.thickness = telegraph.outlineThickness;

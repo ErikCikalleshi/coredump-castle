@@ -69,11 +69,11 @@ struct LinearConfig {
 };
 
 struct Track {
-	enum Type { Fixed, Flex } type = Flex;
+	enum class Type { Fixed, Flex } type = Type::Flex;
 	float value = 1.0f; // Pixels for Fixed, Weight for Flex
 
-	static Track fix(const float px) { return {Fixed, px}; }
-	static Track flex(const float w) { return {Flex, w}; }
+	static Track fix(const float px) { return {Type::Fixed, px}; }
+	static Track flex(const float w) { return {Type::Flex, w}; }
 };
 
 struct GridConfig {

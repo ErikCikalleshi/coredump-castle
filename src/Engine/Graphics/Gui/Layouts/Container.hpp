@@ -9,6 +9,9 @@ class Container : public Widget {
 	void adoptChildren(std::vector<std::unique_ptr<Widget>> newChildren);
 
   protected:
+	[[nodiscard]] const std::vector<std::unique_ptr<Widget>> &getChildren() const { return children; }
+
+  private:
 	std::vector<std::unique_ptr<Widget>> children;
 };
 } // namespace Ui

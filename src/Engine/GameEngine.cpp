@@ -115,7 +115,7 @@ void GameEngine::update(const float deltaTime)
 				states.pop_back();
 			}
 			if (action.state) {
-				states.push_back(std::move(action.state).value());
+				states.push_back(std::move(*action.state));
 				states.back()->init(*this);
 			}
 			break;
@@ -125,7 +125,7 @@ void GameEngine::update(const float deltaTime)
 				states.back()->pause();
 			}
 			if (action.state) {
-				states.push_back(std::move(action.state).value());
+				states.push_back(std::move(*action.state));
 				states.back()->init(*this);
 			}
 			break;
@@ -145,8 +145,8 @@ void GameEngine::update(const float deltaTime)
 				states.back()->cleanup();
 				states.pop_back();
 			}
-			if (action.state) {
-				states.push_back(std::move(action.state).value());
+			if (auto newState = std::move(action.state); newState.has_value()) {
+				states.push_back(std::move(*newState));
 				states.back()->init(*this);
 			}
 			break;

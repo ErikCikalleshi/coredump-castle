@@ -12,7 +12,7 @@ void update(Registry &registry, const float deltaTime)
 	static bool firstRun = true;
 	if (firstRun) {
 		int count = 0;
-		for (const auto entity : view) {
+		for ([[maybe_unused]] const auto entity : view) {
 			count++;
 		}
 		SDL_Log("[StateMachineSystem] First update: %d entities with state machines", count);
@@ -42,7 +42,7 @@ void update(Registry &registry, const float deltaTime)
 		auto stateIt = sm.states.find(sm.currentState);
 		if (stateIt == sm.states.end()) {
 			SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "[StateMachineSystem] Entity %u has invalid state '%s'",
-			            static_cast<unsigned int>(entity), AI::toString(sm.currentState).data());
+			            static_cast<unsigned int>(entity), std::string(AI::toString(sm.currentState)).c_str());
 			continue;
 		}
 

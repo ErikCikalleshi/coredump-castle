@@ -16,8 +16,9 @@ class UiRenderSystem {
 	void initTextDisplayComp(const std::string &text, TextDisplayComponent &textDisplay, const GameEngine &game) const;
 
   private:
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members): never null, owner outlives this object
 	Renderer &renderer;
-	glm::vec2 resolutionSize;
+	glm::vec2 resolutionSize{0.f, 0.f};
 };
 
 } // namespace GameEngine::ECS::Systems

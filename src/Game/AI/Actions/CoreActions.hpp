@@ -33,8 +33,8 @@ struct TriggerAnimationAction final : StateAction {
 	AnimationType animationType;
 	bool loop;
 
-	explicit TriggerAnimationAction(AnimationType animationType, const bool shouldLoop = false)
-	    : animationType(), loop(shouldLoop)
+	explicit TriggerAnimationAction(const AnimationType type, const bool shouldLoop = false)
+	    : animationType(type), loop(shouldLoop)
 	{
 	}
 

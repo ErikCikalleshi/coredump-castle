@@ -118,6 +118,11 @@ class UiBuilder {
 
   private:
 	struct INode {
+		INode() = default;
+		INode(const INode &) = delete;
+		INode &operator=(const INode &) = delete;
+		INode(INode &&) = delete;
+		INode &operator=(INode &&) = delete;
 		virtual ~INode() = default;
 		virtual glm::vec2 getIdealSize(const UIContext *ctx) = 0;
 		virtual std::unique_ptr<Widget> build(const UIContext *ctx, SDL_FRect targetRect) = 0;

@@ -35,6 +35,7 @@ class MapRenderSystem {
   private:
 	static constexpr float mapSizeFactor = 0.80f;
 	std::vector<Utils::RenderUtils::RenderItem> renderItems{};
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members): never null, owner outlives this object
 	Renderer &renderer;
 	float scalingFactor;
 	glm::vec2 focusPoint{0.f, 0.f};
