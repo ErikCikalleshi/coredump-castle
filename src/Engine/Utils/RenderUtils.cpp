@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <execution>
 #include <optional>
 #include <vector>
@@ -165,8 +166,10 @@ void GameEngine::Utils::RenderUtils::submitRenderItems(std::vector<RenderItem> &
 	// Outline glow directions for 8-direction offset rendering
 
 	for (auto &renderItem : renderItems) {
+		std::optional<SDL_FRect> dst = renderItem.dst;
+
 		// Render outline glow first (so it appears behind the sprite)
-		if (renderItem.hasOutlineGlow && renderItem.dst.has_value() && !renderItem.parallax) {
+		if (renderItem.hasOutlineGlow && dst.has_value() && !renderItem.parallax) {
 			// Enable additive blending for a glowing effect
 			SDL_SetTextureBlendMode(renderItem.texture, SDL_BLENDMODE_ADD);
 
@@ -174,11 +177,11 @@ void GameEngine::Utils::RenderUtils::submitRenderItems(std::vector<RenderItem> &
 			// Layer 1: Outer glow (larger, more transparent)
 			// Layer 2: Middle glow
 			// Layer 3: Inner glow (smaller, brighter)
-			constexpr int numLayers = 3;
+			constexpr std::size_t numLayers = 3;
 
-			for (int layer = 0; layer < numLayers; ++layer) {
-				constexpr float layerAlphas[numLayers] = {0.3f, 0.5f, 0.8f};
-				constexpr float layerScales[numLayers] = {2.0f, 1.5f, 1.0f};
+			for (std::size_t layer = 0; layer < numLayers; ++layer) {
+				constexpr std::array<float, numLayers> layerAlphas = {0.3f, 0.5f, 0.8f};
+				constexpr std::array<float, numLayers> layerScales = {2.0f, 1.5f, 1.0f};
 				constexpr std::array<std::pair<float, float>, 8> outlineOffsets = {{{-1.0f, 0.0f},
 				                                                                    {1.0f, 0.0f},
 				                                                                    {0.0f, -1.0f},
@@ -187,9 +190,9 @@ void GameEngine::Utils::RenderUtils::submitRenderItems(std::vector<RenderItem> &
 				                                                                    {0.7f, -0.7f},
 				                                                                    {-0.7f, 0.7f},
 				                                                                    {0.7f, 0.7f}}};
-				const float layerThickness = renderItem.outlineThickness * layerScales[layer];
+				const float layerThickness = renderItem.outlineThickness * layerScales.at(layer);
 				const auto layerAlpha =
-				    static_cast<Uint8>(renderItem.outlineColor.a * renderItem.outlineIntensity * layerAlphas[layer]);
+				    static_cast<Uint8>(renderItem.outlineColor.a * renderItem.outlineIntensity * layerAlphas.at(layer));
 
 				SDL_SetTextureColorMod(renderItem.texture, renderItem.outlineColor.r, renderItem.outlineColor.g,
 				                       renderItem.outlineColor.b);
@@ -197,7 +200,7 @@ void GameEngine::Utils::RenderUtils::submitRenderItems(std::vector<RenderItem> &
 
 				// Render multiple offset copies to create glow outline
 				for (const auto &[dx, dy] : outlineOffsets) {
-					SDL_FRect glowDst = renderItem.dst.value();
+					SDL_FRect glowDst = *dst;
 					glowDst.x += dx * layerThickness;
 					glowDst.y += dy * layerThickness;
 
@@ -211,9 +214,7 @@ void GameEngine::Utils::RenderUtils::submitRenderItems(std::vector<RenderItem> &
 			forceUpdate = true;
 		}
 
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-
-		if (const uint32_t currentColorVal = *reinterpret_cast<const uint32_t *>(&renderItem.colorMod);
+		if (const auto currentColorVal = std::bit_cast<uint32_t>(renderItem.colorMod);
 		    forceUpdate || renderItem.texture != lastTexture || currentColorVal != lastColorVal) {
 			SDL_SetTextureColorMod(renderItem.texture, renderItem.colorMod.r, renderItem.colorMod.g,
 			                       renderItem.colorMod.b);
@@ -223,14 +224,13 @@ void GameEngine::Utils::RenderUtils::submitRenderItems(std::vector<RenderItem> &
 			lastColorVal = currentColorVal;
 			forceUpdate = false;
 		}
-		if (renderItem.isScreenSpace && renderItem.dst.has_value()) {
-			renderer.renderUI(*renderItem.texture, renderItem.src, renderItem.dst.value(), renderItem.flipX,
-			                  renderItem.angle);
+		if (renderItem.isScreenSpace && dst.has_value()) {
+			renderer.renderUI(*renderItem.texture, renderItem.src, *dst, renderItem.flipX, renderItem.angle);
 		} else if (!renderItem.parallax) {
 			renderer.renderTexture(*renderItem.texture, renderItem.src, renderItem.dst, renderItem.flipX,
 			                       renderItem.angle);
-		} else if (renderItem.dst.has_value()) {
-			renderer.renderTextureTiled(*renderItem.texture, renderItem.dst.value(), renderItem.scrollFactor);
+		} else if (dst.has_value()) {
+			renderer.renderTextureTiled(*renderItem.texture, *dst, renderItem.scrollFactor);
 		}
 	}
 }

@@ -10,8 +10,14 @@
     "sdl3-ttf",
     "glm",
     "nlohmann-json",
-    "gtest",
-    "tracy",
+    {
+      "name": "gtest",
+      "platform": "!emscripten"
+    },
+    {
+      "name": "tracy",
+      "platform": "!emscripten"
+    },
     {
       "name": "imgui",
       "features": [

@@ -5,10 +5,7 @@ namespace GameEngine::ECS {
 
 class StateMachineBuilder {
   public:
-	explicit StateMachineBuilder(StateMachineComponent &machine)
-	    : stateMachine(machine), currentStateName(AI::AIState::None)
-	{
-	}
+	explicit StateMachineBuilder(StateMachineComponent &machine) : stateMachine(machine) {}
 
 	StateMachineBuilder &addState(const AI::AIState stateName)
 	{
@@ -72,8 +69,6 @@ class StateMachineBuilder {
 		return *this;
 	}
 
-
-
 	StateMachineBuilder &setInitialState(const AI::AIState stateName)
 	{
 		stateMachine.currentState = stateName;
@@ -86,8 +81,9 @@ class StateMachineBuilder {
 	StateMachineComponent &build() const { return stateMachine; }
 
   private:
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members): never null, owner outlives this object
 	StateMachineComponent &stateMachine;
-	AI::AIState currentStateName;
+	AI::AIState currentStateName = AI::AIState::None;
 };
 
 } // namespace GameEngine::ECS

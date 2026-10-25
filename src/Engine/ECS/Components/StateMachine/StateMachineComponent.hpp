@@ -17,16 +17,31 @@ namespace GameEngine::ECS {
 class Registry;
 
 struct StateData {
+	StateData() = default;
+	StateData(const StateData &) = delete;
+	StateData &operator=(const StateData &) = delete;
+	StateData(StateData &&) = delete;
+	StateData &operator=(StateData &&) = delete;
 	virtual ~StateData() = default;
 };
 struct Transition {
-	AI::AIState targetState;
+	AI::AIState targetState = AI::AIState::None;
 
+	Transition() = default;
+	Transition(const Transition &) = delete;
+	Transition &operator=(const Transition &) = delete;
+	Transition(Transition &&) = delete;
+	Transition &operator=(Transition &&) = delete;
 	virtual ~Transition() = default;
 	virtual bool canTransition(Registry &registry, Entity entity, float deltaTime) const = 0;
 };
 
 struct StateAction {
+	StateAction() = default;
+	StateAction(const StateAction &) = delete;
+	StateAction &operator=(const StateAction &) = delete;
+	StateAction(StateAction &&) = delete;
+	StateAction &operator=(StateAction &&) = delete;
 	virtual ~StateAction() = default;
 	virtual void execute(Registry &registry, Entity entity, float deltaTime) = 0;
 };
@@ -107,6 +122,7 @@ struct StateMachineComponent {
 	std::vector<std::unique_ptr<StateAction>> globalUpdateActions;
 
 	StateMachineComponent() = default;
+	~StateMachineComponent() = default;
 	StateMachineComponent(StateMachineComponent &&) = default;
 	StateMachineComponent &operator=(StateMachineComponent &&) = default;
 	StateMachineComponent(const StateMachineComponent &) = delete;

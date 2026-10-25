@@ -25,6 +25,7 @@
 #include "Game/Factories/ProjectileFactory.hpp"
 
 #include <algorithm>
+#include <optional>
 namespace GameEngine::ECS {
 
 namespace {
@@ -236,13 +237,16 @@ void RecordCornerAction::execute(Registry &registry, Entity entity, float deltaT
 		return;
 	}
 
+	auto &patrol = patrolOpt->get();
+	const float posX = posOpt->get().position.x;
+
 	if (renderOpt->get().isFacingLeft()) {
-		if (!patrolOpt->get().maxX.has_value() || posOpt->get().position.x > patrolOpt->get().maxX.value()) {
-			patrolOpt->get().maxX = posOpt->get().position.x;
+		if (const auto maxX = patrol.maxX; !maxX || posX > *maxX) {
+			patrol.maxX = posX;
 		}
 	} else {
-		if (!patrolOpt->get().minX.has_value() || posOpt->get().position.x < patrolOpt->get().minX.value()) {
-			patrolOpt->get().minX = posOpt->get().position.x;
+		if (const auto minX = patrol.minX; !minX || posX < *minX) {
+			patrol.minX = posX;
 		}
 	}
 }
@@ -544,24 +548,23 @@ bool CanRetreatTransition::canTransition(Registry &registry, Entity entity, floa
 	const bool playerOnLeft = player->center.x < enemy->center.x;
 	const float retreatDir = playerOnLeft ? 1.0f : -1.0f;
 
+	const std::optional<float> minX = patrolOpt->get().minX;
+	const std::optional<float> maxX = patrolOpt->get().maxX;
+
 	if (retreatDir < 0.0f) {
-		if (patrolOpt->get().minX.has_value()) {
-			if (enemy->position.x <= patrolOpt->get().minX.value() + 10.0f) {
-				return false;
-			}
+		if (minX && enemy->position.x <= *minX + 10.0f) {
+			return false;
 		}
 	} else {
-		if (patrolOpt->get().maxX.has_value()) {
-			if (enemy->position.x >= patrolOpt->get().maxX.value() - 10.0f) {
-				return false;
-			}
+		if (maxX && enemy->position.x >= *maxX - 10.0f) {
+			return false;
 		}
 	}
 
-	if (patrolOpt->get().minX.has_value() && player->position.x <= patrolOpt->get().minX.value() + 64.0f) {
+	if (minX && player->position.x <= *minX + 64.0f) {
 		return false;
 	}
-	if (patrolOpt->get().maxX.has_value() && player->position.x >= patrolOpt->get().maxX.value() - 64.0f) {
+	if (maxX && player->position.x >= *maxX - 64.0f) {
 		return false;
 	}
 
@@ -590,12 +593,14 @@ bool SafePassedPlayerTransition::canTransition(Registry &registry, Entity entity
 		}
 
 		if (!passed) {
-			if (direction > 0.0f && patrolOpt->get().maxX.has_value()) {
-				if (enemy->position.x >= patrolOpt->get().maxX.value() - 10.0f) {
+			const std::optional<float> minX = patrolOpt->get().minX;
+			const std::optional<float> maxX = patrolOpt->get().maxX;
+			if (direction > 0.0f && maxX) {
+				if (enemy->position.x >= *maxX - 10.0f) {
 					passed = true;
 				}
-			} else if (direction < 0.0f && patrolOpt->get().minX.has_value()) {
-				if (enemy->position.x <= patrolOpt->get().minX.value() + 10.0f) {
+			} else if (direction < 0.0f && minX) {
+				if (enemy->position.x <= *minX + 10.0f) {
 					passed = true;
 				}
 			}

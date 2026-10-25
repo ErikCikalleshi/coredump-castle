@@ -25,3 +25,17 @@ endif ()
 add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE GameLib)
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_EXCEPTIONS ON)
+
+if (EMSCRIPTEN)
+    set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "index" SUFFIX ".html")
+    target_link_options(${PROJECT_NAME} PRIVATE
+            "SHELL:--shell-file ${CMAKE_SOURCE_DIR}/web/shell.html"
+            "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/assets@/assets"
+            -sALLOW_MEMORY_GROWTH=1
+            -sINITIAL_MEMORY=268435456
+            -sSTACK_SIZE=1048576
+            -sEXIT_RUNTIME=0
+            -fexceptions)
+    target_compile_options(GameLib PUBLIC -fexceptions)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fexceptions)
+endif ()

@@ -62,7 +62,7 @@ class ScopedClip {
 
   private:
 	SDL_Renderer *rendererPtr;
-	SDL_Rect oldClip;
+	SDL_Rect oldClip{};
 	bool wasClipping = false;
 };
 

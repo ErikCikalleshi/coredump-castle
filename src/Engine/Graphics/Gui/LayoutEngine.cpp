@@ -41,7 +41,7 @@ std::vector<float> resolveTracks(const std::vector<Track> &defs, const int unifo
 	}
 
 	auto [usedFixed, totalFlex] = std::ranges::fold_left(defs, std::pair{0.0f, 0.0f}, [](auto acc, const Track &t) {
-		if (t.type == Track::Fixed)
+		if (t.type == Track::Type::Fixed)
 			acc.first += t.value;
 		else
 			acc.second += t.value;
@@ -52,7 +52,7 @@ std::vector<float> resolveTracks(const std::vector<Track> &defs, const int unifo
 	const float flexUnit = (totalFlex > 0) ? (flexSpace / totalFlex) : 0.0f;
 
 	auto resultsView = defs | std::views::transform([=](const Track &t) {
-		                   return (t.type == Track::Fixed) ? t.value : (t.value * flexUnit);
+		                   return (t.type == Track::Type::Fixed) ? t.value : (t.value * flexUnit);
 	                   });
 
 	return {resultsView.begin(), resultsView.end()};
